@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Icons } from '@/components/icons'
 import { useLockBody } from '@/hooks/use-lock-body'
 import { cn } from '@/lib/cn'
+import { siteConfig } from '@/lib/siteConfig'
 import { FC } from 'react'
 
 interface MobileNavProps {
@@ -27,7 +28,7 @@ export const MobileNav: FC<MobileNavProps> = ({ items }) => {
       <div className="relative z-20 grid gap-6 rounded-md bg-popover p-4 text-popover-foreground shadow-md">
         <Link href="/" className="flex items-center space-x-2">
           <Icons.logo />
-          <span className="font-bold">The Next QR</span>
+          <span className="font-bold">{siteConfig.name}</span>
         </Link>
         <nav className="grid grid-flow-row auto-rows-max text-sm">
           {items.map((item, index) => (

@@ -5,6 +5,7 @@ import { FC, useState } from 'react'
 
 import { Icons } from '@/components/icons'
 import { MobileNav } from '@/components/mobile-nav'
+import { siteConfig } from '@/lib/siteConfig'
 
 interface MainNavProps {
   logoLink?: string
@@ -17,7 +18,9 @@ export const MainNav: FC<MainNavProps> = ({ logoLink = '/' }) => {
     <div className="flex">
       <Link href={logoLink} className="hidden items-center space-x-2 md:flex">
         <Icons.logo />
-        <span className="hidden font-bold sm:inline-block">The Next QR</span>
+        <span className="hidden font-bold sm:inline-block">
+          {siteConfig.name}
+        </span>
       </Link>
       <button
         className="flex items-center space-x-2 md:hidden"

@@ -1,10 +1,10 @@
 'use client'
 
-import debounce from 'lodash/debounce'
+// import debounce from 'lodash/debounce'
 import { signOut } from 'next-auth/react'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
@@ -18,12 +18,12 @@ import {
   CommandList,
   CommandSeparator
 } from '@/components/ui/command'
-import { doSearch, type SearchResult } from '../app/(app)/actions/doSearch'
+// import { doSearch, type SearchResult } from '../app/(app)/actions/doSearch'
 
 export const AppNavCommand: FC = () => {
   const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  // const [search, setSearch] = useState('')
+  // const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const { setTheme } = useTheme()
   const router = useRouter()
 
@@ -39,26 +39,26 @@ export const AppNavCommand: FC = () => {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
-  useEffect(() => {
-    if (!search) {
-      setSearchResults([])
-      return
-    }
-    doSearch(search).then(results => setSearchResults(results))
-  }, [search])
+  // useEffect(() => {
+  //   if (!search) {
+  //     setSearchResults([])
+  //     return
+  //   }
+  //   doSearch(search).then(results => setSearchResults(results))
+  // }, [search])
 
   const runCommand = useCallback((command: () => unknown) => {
     setOpen(false)
     command()
   }, [])
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((search: string) => {
-        setSearch(search)
-      }, 500),
-    []
-  )
+  // const debouncedSearch = useMemo(
+  //   () =>
+  //     debounce((search: string) => {
+  //       setSearch(search)
+  //     }, 500),
+  //   []
+  // )
 
   return (
     <>
@@ -76,9 +76,9 @@ export const AppNavCommand: FC = () => {
         <Command>
           <CommandInput
             placeholder="Search..."
-            onChangeCapture={e => {
-              debouncedSearch((e.target as any)?.value || '')
-            }}
+            // onChangeCapture={e => {
+            //   debouncedSearch((e.target as any)?.value || '')
+            // }}
           />
           <CommandList>
             <CommandEmpty>No search results found.</CommandEmpty>
@@ -133,7 +133,7 @@ export const AppNavCommand: FC = () => {
                 System
               </CommandItem>
             </CommandGroup>
-            {searchResults.length ? (
+            {/* {searchResults.length ? (
               <CommandGroup heading="Search Results">
                 {searchResults.map((sr, i) => (
                   <CommandItem
@@ -145,7 +145,7 @@ export const AppNavCommand: FC = () => {
                   </CommandItem>
                 ))}
               </CommandGroup>
-            ) : undefined}
+            ) : undefined} */}
           </CommandList>
         </Command>
       </CommandDialog>
