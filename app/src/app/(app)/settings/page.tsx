@@ -3,7 +3,6 @@ import { Metadata } from 'next'
 import { Heading } from '@/components/heading'
 import { Shell } from '@/components/shell'
 import { getAuthSession } from '@/lib/auth'
-import { delay } from '@/lib/delay'
 import { siteConfig } from '@/lib/siteConfig'
 import { Render } from './render'
 
@@ -13,8 +12,6 @@ export const metadata: Metadata = {
 
 const SettingsPage = async () => {
   const session = await getAuthSession()
-
-  await delay(10000)
 
   if (!session?.user) return
 
