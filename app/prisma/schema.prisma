@@ -7,14 +7,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now()) @db.Timestamptz()
-    updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz()
-
-    @@map("Examples")
-}
-
 model Account {
     id                String  @id @default(cuid())
     userId            String
@@ -66,9 +58,15 @@ model Role {
 }
 
 enum Permissions {
+    UserList
     UserView
     UserCreate
     UserUpdate
+    TaskList
+    TaskView
+    TaskCreate
+    TaskUpdate
+    TaskDelete
 }
 
 model RolePermission {
@@ -102,6 +100,9 @@ model User {
     sessions Session[]
     role     Role?     @relation("userRole", fields: [roleId], references: [id])
 
+    createdTasks Task[] @relation("createdTasks")
+    updatedTasks Task[] @relation("updatedTasks")
+
     @@map("Users")
 }
 
@@ -112,4 +113,28 @@ model VerificationToken {
 
     @@unique([identifier, token])
     @@map("VerificationTokens")
+}
+
+enum TaskStatus {
+    Backlog
+    Todo
+    In_Progress
+    Done
+    Cancelled
+}
+
+model Task {
+    id          String     @id @default(cuid())
+    title       String
+    status      TaskStatus
+    description String?
+
+    createdAt   DateTime @default(now()) @db.Timestamptz()
+    updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz()
+    createdById String
+    createdBy   User     @relation("createdTasks", fields: [createdById], references: [id], onDelete: Cascade)
+    updatedById String
+    updatedBy   User     @relation("updatedTasks", fields: [updatedById], references: [id], onDelete: Cascade)
+
+    @@map("Tasks")
 }

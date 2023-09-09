@@ -7,12 +7,14 @@ import { Icons } from '@/components/icons'
 import { cn } from '@/lib/cn'
 import { FC } from 'react'
 
+type IconKeys = keyof typeof Icons
+
 interface SideNavProps {
   items: {
     title: string
     href?: string | null
     disabled?: boolean | null
-    icon?: string | null
+    icon?: IconKeys | null
   }[]
 }
 
@@ -24,7 +26,7 @@ export const SideNav: FC<SideNavProps> = ({ items }) => {
   return (
     <nav className="grid items-start gap-2">
       {items.map((item, index) => {
-        const Icon = (Icons as any)[item.icon || 'arrowRight']
+        const Icon = Icons[item.icon || 'arrowRight']
         return (
           item.href && (
             <Link key={index} href={item.disabled ? '/' : item.href}>

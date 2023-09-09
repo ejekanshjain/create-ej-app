@@ -84,19 +84,19 @@ export const AppNavCommand: FC = () => {
             <CommandEmpty>No search results found.</CommandEmpty>
             <CommandGroup heading="Suggestions">
               <CommandItem
-                onSelect={() => runCommand(() => router.push('/qr-codes'))}
+                onSelect={() => runCommand(() => router.push('/dashboard'))}
               >
-                <Icons.qrCode className="mr-2 h-4 w-4" />
-                QR Codes
+                <Icons.dashboard className="mr-2 h-4 w-4" />
+                Dashboard
+              </CommandItem>
+              <CommandItem
+                onSelect={() => runCommand(() => router.push('/tasks'))}
+              >
+                <Icons.task className="mr-2 h-4 w-4" />
+                Tasks
               </CommandItem>
             </CommandGroup>
             <CommandGroup heading="Account">
-              <CommandItem
-                onSelect={() => runCommand(() => router.push('/billing'))}
-              >
-                <Icons.card className="mr-2 h-4 w-4" />
-                Billing
-              </CommandItem>
               <CommandItem
                 onSelect={() => runCommand(() => router.push('/settings'))}
               >
