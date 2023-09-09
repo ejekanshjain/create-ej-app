@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 
+import { Heading } from '@/components/heading'
 import { Shell } from '@/components/shell'
 import { siteConfig } from '@/lib/siteConfig'
 
@@ -8,7 +9,11 @@ export const metadata: Metadata = {
 }
 
 const DashboardPage = () => {
-  return <Shell>Dashboard</Shell>
+  return (
+    <Shell>
+      <Heading heading="Dashboard" />
+    </Shell>
+  )
 }
 
 export default DashboardPage
