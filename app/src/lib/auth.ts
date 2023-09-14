@@ -10,6 +10,7 @@ import GitHubProvider from 'next-auth/providers/github'
 
 import { env } from '@/env.mjs'
 import { prisma } from '@/lib/db'
+import { notFound } from 'next/navigation'
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -108,6 +109,30 @@ export const authGuard = async (
   }
 
   return session
+}
+
+export const authGuardApi = async (
+  types?: UserType | UserType[],
+  permission?: $Enums.Permissions
+) => {
+  try {
+    return await authGuard(types, permission)
+  } catch (err) {
+    return {
+      error: 'Unauthorized'
+    }
+  }
+}
+
+export const authGuardPage = async (
+  types?: UserType | UserType[],
+  permission?: $Enums.Permissions
+) => {
+  try {
+    return await authGuard(types, permission)
+  } catch (err) {
+    return notFound()
+  }
 }
 
 export const getAuthSessionWithPermissions = async () => {
