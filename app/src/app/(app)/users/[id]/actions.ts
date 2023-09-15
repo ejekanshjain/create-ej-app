@@ -37,7 +37,7 @@ export const createUser = async ({
   name: string
   email: string
   type: UserType
-  roleId: string
+  roleId?: string | null
 }) => {
   const session = await authGuard(['Root'])
   if (!session) throw new Error('Unauthorized')
@@ -68,7 +68,7 @@ export const updateUser = async ({
   name: string
   email: string
   type: UserType
-  roleId: string
+  roleId?: string | null
 }) => {
   const session = await authGuard(['Root'])
   if (!session) throw new Error('Unauthorized')

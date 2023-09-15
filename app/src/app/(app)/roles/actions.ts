@@ -49,3 +49,19 @@ export const getRoles = async ({
 }
 
 export type GetRolesFnDataType = UnwrapPromise<ReturnType<typeof getRoles>>
+
+export const getRolesMini = async () => {
+  return await prisma.role.findMany({
+    select: {
+      id: true,
+      name: true
+    },
+    orderBy: {
+      name: 'asc'
+    }
+  })
+}
+
+export type GetRolesMiniFnDataType = UnwrapPromise<
+  ReturnType<typeof getRolesMini>
+>
