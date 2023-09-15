@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { Heading } from '@/components/heading'
 import { Icons } from '@/components/icons'
 import { Shell } from '@/components/shell'
+import { SystemInfo } from '@/components/system-info'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +42,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
-import { formatDateTime } from '@/lib/formatDate'
+import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import {
   GetTaskFnDataType,
   createTask,
@@ -101,34 +102,7 @@ export const Render: FC<{
 
   return (
     <Shell>
-      <Heading
-        heading={task ? task.title : 'New Task'}
-        text={
-          task
-            ? 'Created on: ' + formatDateTime(task.createdAt)
-            : 'Will be Created on: ' + formatDateTime(new Date())
-        }
-      >
-        {task ? (
-          <p className="text-muted-foreground">
-            Created by:{' '}
-            <Link
-              href={`/users/${task.createdBy.id}`}
-              className="underline underline-offset-4 transition-all hover:text-foreground"
-            >
-              {task.createdBy.name ?? 'Unknown'}
-            </Link>
-            <br />
-            Updated by:{' '}
-            <Link
-              href={`/users/${task.updatedBy.id}`}
-              className="underline underline-offset-4 transition-all hover:text-foreground"
-            >
-              {task.updatedBy.name ?? 'Unknown'}
-            </Link>
-          </p>
-        ) : undefined}
-      </Heading>
+      <Heading heading={task ? task.title : 'New Task'} />
       <Form {...form}>
         <form
           className="grid grid-cols-1 gap-3 md:grid-cols-2"
@@ -282,6 +256,46 @@ export const Render: FC<{
           />
         </form>
       </Form>
+      {task ? (
+        <SystemInfo
+          items={[
+            {
+              label: 'Id',
+              value: task.id
+            },
+            {
+              label: 'Created At',
+              value: formatDateTime(task.createdAt)
+            },
+            {
+              label: 'Updated At',
+              value: timesAgo(task.updatedAt)
+            },
+            {
+              label: 'Created By',
+              value: (
+                <Link
+                  href={`/users/${task.createdBy.id}`}
+                  className="underline underline-offset-4 transition-all hover:text-foreground"
+                >
+                  {task.createdBy.name ?? 'Unknown'}
+                </Link>
+              )
+            },
+            {
+              label: 'Updated By',
+              value: (
+                <Link
+                  href={`/users/${task.updatedBy.id}`}
+                  className="underline underline-offset-4 transition-all hover:text-foreground"
+                >
+                  {task.updatedBy.name ?? 'Unknown'}
+                </Link>
+              )
+            }
+          ]}
+        />
+      ) : undefined}
     </Shell>
   )
 }
