@@ -114,7 +114,7 @@ export const Render: FC<{
             Created by:{' '}
             <Link
               href={`/users/${task.createdBy.id}`}
-              className="underline underline-offset-4"
+              className="underline underline-offset-4 transition-all hover:text-foreground"
             >
               {task.createdBy.name ?? 'Unknown'}
             </Link>
@@ -122,7 +122,7 @@ export const Render: FC<{
             Updated by:{' '}
             <Link
               href={`/users/${task.updatedBy.id}`}
-              className="underline underline-offset-4"
+              className="underline underline-offset-4 transition-all hover:text-foreground"
             >
               {task.updatedBy.name ?? 'Unknown'}
             </Link>
