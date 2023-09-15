@@ -13,7 +13,8 @@ const Layout = async ({ children }: { children: ReactNode }) => {
 
   if (!session?.user) return notFound()
 
-  const [task] = await Promise.all([checkForPermission('TaskList', session)])
+  const isRoot = session.user.type === 'Root'
+  const [isTask] = await Promise.all([checkForPermission('TaskList', session)])
 
   return (
     <div className="flex min-h-screen flex-col space-y-6">
@@ -26,7 +27,19 @@ const Layout = async ({ children }: { children: ReactNode }) => {
                 title: 'Dashboard',
                 href: '/dashboard'
               },
-              ...(task
+              ...(isRoot
+                ? [
+                    {
+                      title: 'Users',
+                      href: '/users'
+                    },
+                    {
+                      title: 'Roles',
+                      href: '/roles'
+                    }
+                  ]
+                : []),
+              ...(isTask
                 ? [
                     {
                       title: 'Tasks',
@@ -61,7 +74,21 @@ const Layout = async ({ children }: { children: ReactNode }) => {
                 href: '/dashboard',
                 icon: 'dashboard'
               },
-              ...(task
+              ...(isRoot
+                ? [
+                    {
+                      title: 'Users',
+                      href: '/users',
+                      icon: 'user' as const
+                    },
+                    {
+                      title: 'Roles',
+                      href: '/roles',
+                      icon: 'mixer' as const
+                    }
+                  ]
+                : []),
+              ...(isTask
                 ? [
                     {
                       title: 'Tasks',

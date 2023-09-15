@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -33,49 +34,36 @@ import {
   FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
 import {
-  GetTaskFnDataType,
-  createTask,
-  deleteTask,
-  updateTask
+  GetRoleFnDataType,
+  createRole,
+  deleteRole,
+  updateRole
 } from './actions'
 
-const TaskSchema = z.object({
-  title: z.string().nonempty(),
-  status: z.nativeEnum($Enums.TaskStatus),
-  description: z.string().optional()
+const RoleSchema = z.object({
+  name: z.string().nonempty(),
+  permissions: z.array(z.nativeEnum($Enums.Permissions))
 })
 
-type FormData = z.infer<typeof TaskSchema>
+type FormData = z.infer<typeof RoleSchema>
 
-const statuses = Object.values($Enums.TaskStatus).map(x => ({
+const permissions = Object.values($Enums.Permissions).map(x => ({
   label: generateLabel(x),
   value: x
 }))
 
 export const Render: FC<{
-  task: GetTaskFnDataType | undefined
-  canUpdate: boolean
-  canCreate: boolean
-  canDelete: boolean
-}> = ({ task, canUpdate, canCreate, canDelete }) => {
+  role: GetRoleFnDataType | undefined
+}> = ({ role }) => {
   const form = useForm<FormData>({
-    resolver: zodResolver(TaskSchema),
+    resolver: zodResolver(RoleSchema),
     defaultValues: {
-      title: task?.title ?? '',
-      status: task?.status || 'Todo',
-      description: task?.description ?? ''
+      name: role?.name ?? '',
+      permissions: role?.permissions.map(p => p.permission) ?? []
     }
   })
   const router = useRouter()
@@ -85,21 +73,21 @@ export const Render: FC<{
   async function onSubmit(data: FormData) {
     setIsSaving(true)
     try {
-      if (!task) {
-        const newId = await createTask(data)
-        router.replace(`/tasks/${newId}`)
+      if (!role) {
+        const newId = await createRole(data)
+        router.replace(`/roles/${newId}`)
       } else {
-        await updateTask({
-          id: task.id,
+        await updateRole({
+          id: role.id,
           ...data
         })
       }
       toast({
-        title: 'Task saved'
+        title: 'Role saved'
       })
     } catch (err) {
       toast({
-        title: 'Error saving task',
+        title: 'Error saving role',
         variant: 'destructive'
       })
     }
@@ -108,7 +96,7 @@ export const Render: FC<{
 
   return (
     <Shell>
-      <Heading heading={task ? task.title : 'New Task'} />
+      <Heading heading={role ? role.name : 'New Role'} />
       <Form {...form}>
         <form
           className="grid grid-cols-1 gap-3 md:grid-cols-2"
@@ -119,17 +107,15 @@ export const Render: FC<{
               <Icons.chevronLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
-            {(task ? canUpdate : canCreate) ? (
-              <Button type="submit" disabled={isSaving || isDeleting}>
-                {isSaving ? (
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Icons.save className="mr-2 h-4 w-4" />
-                )}
-                <span>Save</span>
-              </Button>
-            ) : undefined}
-            {task && canDelete ? (
+            <Button type="submit" disabled={isSaving || isDeleting}>
+              {isSaving ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.save className="mr-2 h-4 w-4" />
+              )}
+              <span>Save</span>
+            </Button>
+            {role ? (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -160,14 +146,14 @@ export const Render: FC<{
                       onClick={async () => {
                         setIsDeleting(true)
                         try {
-                          await deleteTask(task.id)
+                          await deleteRole(role.id)
                           toast({
-                            title: 'Task deleted'
+                            title: 'Role deleted'
                           })
-                          router.push('/tasks')
+                          router.push('/roles')
                         } catch (err) {
                           toast({
-                            title: 'Error deleting task',
+                            title: 'Error deleting role',
                             variant: 'destructive'
                           })
                         }
@@ -180,8 +166,8 @@ export const Render: FC<{
                 </AlertDialogContent>
               </AlertDialog>
             ) : undefined}
-            {task && canCreate ? (
-              <Link href="/tasks/new">
+            {role ? (
+              <Link href="/roles/new">
                 <Button
                   type="button"
                   disabled={isSaving || isDeleting}
@@ -197,14 +183,14 @@ export const Render: FC<{
 
           <FormField
             control={form.control}
-            name="title"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Title</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input
                     type="text"
-                    placeholder="Enter a title"
+                    placeholder="Enter a name"
                     disabled={isSaving}
                     {...field}
                   />
@@ -214,90 +200,63 @@ export const Render: FC<{
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isSaving}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {statuses.map(({ label, value }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div></div>
 
           <FormField
             control={form.control}
-            name="description"
-            render={({ field }) => (
+            name="permissions"
+            render={() => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter description here"
-                    disabled={isSaving}
-                    {...field}
+                <FormLabel className="text-base">Permissions</FormLabel>
+                {permissions.map(item => (
+                  <FormField
+                    key={item.value}
+                    control={form.control}
+                    name="permissions"
+                    render={({ field }) => (
+                      <FormItem
+                        key={item.value}
+                        className="flex flex-row items-start space-x-3 space-y-0"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(item.value)}
+                            onCheckedChange={checked => {
+                              return checked
+                                ? field.onChange([...field.value, item.value])
+                                : field.onChange(
+                                    field.value?.filter(
+                                      value => value !== item.value
+                                    )
+                                  )
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel>{item.label}</FormLabel>
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
+                ))}
                 <FormMessage />
               </FormItem>
             )}
           />
         </form>
       </Form>
-      {task ? (
+      {role ? (
         <SystemInfo
           items={[
             {
               label: 'Id',
-              value: task.id
+              value: role.id
             },
             {
               label: 'Created At',
-              value: formatDateTime(task.createdAt)
+              value: formatDateTime(role.createdAt)
             },
             {
               label: 'Updated At',
-              value: timesAgo(task.updatedAt)
-            },
-            {
-              label: 'Created By',
-              value: (
-                <Link
-                  href={`/users/${task.createdBy.id}`}
-                  className="underline underline-offset-4 transition-all hover:text-foreground"
-                >
-                  {task.createdBy.name ?? 'Unknown'}
-                </Link>
-              )
-            },
-            {
-              label: 'Updated By',
-              value: (
-                <Link
-                  href={`/users/${task.updatedBy.id}`}
-                  className="underline underline-offset-4 transition-all hover:text-foreground"
-                >
-                  {task.updatedBy.name ?? 'Unknown'}
-                </Link>
-              )
+              value: timesAgo(role.updatedAt)
             }
           ]}
         />

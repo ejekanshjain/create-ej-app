@@ -31,9 +31,9 @@ const TaskPage = async ({
     const tempSession = await authGuard(undefined, 'TaskView')
     if (!tempSession) return notFound()
     session = tempSession
-    const t = await getTask(id)
-    if (!t) return notFound()
-    task = t
+    const x = await getTask(id)
+    if (!x) return notFound()
+    task = x
   }
 
   const [canUpdate, canCreate, canDelete] = await Promise.all([

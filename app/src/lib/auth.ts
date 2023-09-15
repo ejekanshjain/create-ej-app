@@ -93,22 +93,22 @@ export const authGuard = async (
     session = tempSession
   }
 
+  if (session.user.type === 'Root') return session
+
   if (types) {
     if (Array.isArray(types) && !types.includes(session.user.type)) return false
-    if (!Array.isArray(types) && types !== session.user.type) return false
+    else if (types !== session.user.type) return false
   }
 
-  if (session.user.type !== 'Root' && permission) {
-    if (!session.user.roleId) return false
+  if (!session.user.roleId || !permission) return false
 
-    const c = await prisma.rolePermission.count({
-      where: {
-        roleId: session.user.roleId,
-        permission
-      }
-    })
-    if (!c) return false
-  }
+  const c = await prisma.rolePermission.count({
+    where: {
+      roleId: session.user.roleId,
+      permission
+    }
+  })
+  if (!c) return false
 
   return session
 }

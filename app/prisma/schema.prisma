@@ -58,10 +58,6 @@ model Role {
 }
 
 enum Permissions {
-    UserList
-    UserView
-    UserCreate
-    UserUpdate
     TaskList
     TaskView
     TaskCreate
