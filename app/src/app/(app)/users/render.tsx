@@ -1,5 +1,6 @@
 'use client'
 
+import { $Enums } from '@prisma/client'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -10,15 +11,21 @@ import { Icons } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Button } from '@/components/ui/button'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
-import { GetRolesFnDataType } from './actions'
+import { generateLabel } from '@/lib/generateLabel'
+import { GetUsersFnDataType } from './actions'
+
+const types = Object.values($Enums.UserType).map(x => ({
+  label: generateLabel(x),
+  value: x
+}))
 
 export const Render: FC<{
-  data: GetRolesFnDataType
+  data: GetUsersFnDataType
 }> = ({ data }) => {
   return (
     <Shell>
-      <Heading heading="Roles" text="List of all the roles">
-        <Link href="/roles/new">
+      <Heading heading="Users" text="List of all the users">
+        <Link href="/users/new">
           <Button>
             <Icons.add className="mr-2 h-4 w-4" />
             New
@@ -35,11 +42,31 @@ export const Render: FC<{
             cell: ({ row }) => (
               <Link
                 className="underline underline-offset-4"
-                href={`/roles/${row.original.id}`}
+                href={`/users/${row.original.id}`}
               >
                 {row.original.name}
               </Link>
             )
+          },
+          {
+            accessorKey: 'email',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Email" />
+            )
+          },
+          {
+            accessorKey: 'type',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Type" />
+            )
+          },
+          {
+            accessorKey: 'role',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Role" />
+            ),
+            cell: ({ row }) => row.original.role?.name,
+            enableSorting: false
           },
           {
             accessorKey: 'createdAt',
@@ -56,12 +83,23 @@ export const Render: FC<{
             cell: ({ row }) => timesAgo(row.original.updatedAt)
           }
         ]}
-        data={data.roles}
+        data={data.users}
         total={data.total}
         searchableColumns={[
           {
             id: 'name',
             title: 'Name'
+          },
+          {
+            id: 'email',
+            title: 'Email'
+          }
+        ]}
+        filterableColumns={[
+          {
+            id: 'type',
+            title: 'Type',
+            options: types
           }
         ]}
       />

@@ -1,5 +1,6 @@
 'use client'
 
+import { $Enums } from '@prisma/client'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -10,7 +11,13 @@ import { Icons } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Button } from '@/components/ui/button'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
+import { generateLabel } from '@/lib/generateLabel'
 import { GetTasksFnDataType } from './actions'
+
+const statuses = Object.values($Enums.TaskStatus).map(x => ({
+  label: generateLabel(x),
+  value: x
+}))
 
 export const Render: FC<{
   data: GetTasksFnDataType
@@ -108,28 +115,7 @@ export const Render: FC<{
           {
             id: 'status',
             title: 'Status',
-            options: [
-              {
-                label: 'Backlog',
-                value: 'Backlog'
-              },
-              {
-                label: 'Todo',
-                value: 'Todo'
-              },
-              {
-                label: 'In Progress',
-                value: 'In_Progress'
-              },
-              {
-                label: 'Done',
-                value: 'Done'
-              },
-              {
-                label: 'Cancelled',
-                value: 'Cancelled'
-              }
-            ]
+            options: statuses
           }
         ]}
       />
