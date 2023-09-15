@@ -1,9 +1,17 @@
+import { Metadata } from 'next'
 import { Session } from 'next-auth'
 import { notFound } from 'next/navigation'
 
 import { authGuard, checkForPermission } from '@/lib/auth'
+import { siteConfig } from '@/lib/siteConfig'
 import { GetTaskFnDataType, getTask } from './actions'
 import { Render } from './render'
+
+export const generateMetadata = async (props: {
+  params: { id: string }
+}): Promise<Metadata> => ({
+  title: 'Task - ' + props.params.id + ' | ' + siteConfig.name
+})
 
 const TaskPage = async ({
   params: { id }

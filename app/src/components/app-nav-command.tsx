@@ -20,7 +20,11 @@ import {
 } from '@/components/ui/command'
 // import { doSearch, type SearchResult } from '../app/(app)/actions/doSearch'
 
-export const AppNavCommand: FC = () => {
+export const AppNavCommand: FC<{
+  modules: {
+    task: boolean
+  }
+}> = ({ modules }) => {
   const [open, setOpen] = useState(false)
   // const [search, setSearch] = useState('')
   // const [searchResults, setSearchResults] = useState<SearchResult[]>([])
@@ -89,12 +93,14 @@ export const AppNavCommand: FC = () => {
                 <Icons.dashboard className="mr-2 h-4 w-4" />
                 Dashboard
               </CommandItem>
-              <CommandItem
-                onSelect={() => runCommand(() => router.push('/tasks'))}
-              >
-                <Icons.task className="mr-2 h-4 w-4" />
-                Tasks
-              </CommandItem>
+              {modules.task ? (
+                <CommandItem
+                  onSelect={() => runCommand(() => router.push('/tasks'))}
+                >
+                  <Icons.task className="mr-2 h-4 w-4" />
+                  Tasks
+                </CommandItem>
+              ) : undefined}
             </CommandGroup>
             <CommandGroup heading="Account">
               <CommandItem

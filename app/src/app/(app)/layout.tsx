@@ -1,17 +1,19 @@
 import { notFound } from 'next/navigation'
 import { ReactNode } from 'react'
 
+import { AppNavCommand } from '@/components/app-nav-command'
 import { MainNav } from '@/components/main-nav'
 import { SideNav } from '@/components/side-nav'
 import { SiteFooter } from '@/components/site-footer'
 import { UserAccountNav } from '@/components/user-account-nav'
-import { getAuthSession } from '@/lib/auth'
-import { AppNavCommand } from '../../components/app-nav-command'
+import { checkForPermission, getAuthSession } from '@/lib/auth'
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   const session = await getAuthSession()
 
   if (!session?.user) return notFound()
+
+  const [task] = await Promise.all([checkForPermission('TaskList', session)])
 
   return (
     <div className="flex min-h-screen flex-col space-y-6">
@@ -24,14 +26,22 @@ const Layout = async ({ children }: { children: ReactNode }) => {
                 title: 'Dashboard',
                 href: '/dashboard'
               },
-              {
-                title: 'Tasks',
-                href: '/tasks'
-              }
+              ...(task
+                ? [
+                    {
+                      title: 'Tasks',
+                      href: '/tasks'
+                    }
+                  ]
+                : [])
             ]}
           />
           <div className="flex items-center justify-center space-x-4">
-            <AppNavCommand />
+            <AppNavCommand
+              modules={{
+                task: true
+              }}
+            />
             <UserAccountNav
               user={{
                 name: session.user.name,
@@ -51,11 +61,15 @@ const Layout = async ({ children }: { children: ReactNode }) => {
                 href: '/dashboard',
                 icon: 'dashboard'
               },
-              {
-                title: 'Tasks',
-                href: '/tasks',
-                icon: 'task'
-              },
+              ...(task
+                ? [
+                    {
+                      title: 'Tasks',
+                      href: '/tasks',
+                      icon: 'task' as const
+                    }
+                  ]
+                : []),
               {
                 title: 'Settings',
                 href: '/settings',

@@ -1,9 +1,15 @@
 import { Task, TaskStatus } from '@prisma/client'
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 
 import { authGuard, checkForPermission } from '@/lib/auth'
-import { notFound } from 'next/navigation'
+import { siteConfig } from '@/lib/siteConfig'
 import { getTasks } from './actions'
 import { Render } from './render'
+
+export const metadata: Metadata = {
+  title: 'Tasks' + ' | ' + siteConfig.name
+}
 
 const TasksPage = async ({
   searchParams

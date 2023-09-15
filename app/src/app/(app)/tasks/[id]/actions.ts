@@ -1,11 +1,11 @@
 'use server'
 
+import { $Enums } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 import { authGuard } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { UnwrapPromise } from '@/types/UnwrapPromise'
-import { $Enums } from '@prisma/client'
 
 export const getTask = async (id: string) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskView')
