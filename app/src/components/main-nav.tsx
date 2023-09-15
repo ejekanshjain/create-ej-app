@@ -50,7 +50,7 @@ export const MainNav: FC<MainNavProps> = ({ logoLink = '/', items }) => {
             </Link>
           ))}
         </nav>
-      ) : null}
+      ) : undefined}
       <button
         className="flex items-center space-x-2 md:hidden"
         onClick={() => setShowMobileMenu(prev => !prev)}

@@ -14,6 +14,20 @@ export const getTask = async (id: string) => {
   return await prisma.task.findUnique({
     where: {
       id
+    },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          name: true
+        }
+      },
+      updatedBy: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
     }
   })
 }

@@ -61,7 +61,7 @@ export const getTasks = async ({
       skip: (page - 1) * limit,
       take: limit,
       orderBy: {
-        [sortBy || 'title']: sortOrder || 'asc'
+        [sortBy || 'createdAt']: sortOrder || 'desc'
       }
     }),
     prisma.task.count({

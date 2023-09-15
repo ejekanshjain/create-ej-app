@@ -39,8 +39,9 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
-import { formatDate } from '@/lib/formatDate'
+import { formatDateTime } from '@/lib/formatDate'
 import { $Enums } from '@prisma/client'
+import Link from 'next/link'
 import {
   GetTaskFnDataType,
   createTask,
@@ -102,14 +103,38 @@ export const Render: FC<{
     <Shell>
       <Heading
         heading={task ? task.title : 'New Task'}
-        text={task ? 'Created on: ' + formatDate(task.createdAt) : undefined}
-      />
+        text={
+          task
+            ? 'Created on: ' + formatDateTime(task.createdAt)
+            : 'Will be Created on: ' + formatDateTime(new Date())
+        }
+      >
+        {task ? (
+          <p className="text-muted-foreground">
+            Created by:{' '}
+            <Link
+              href={`/users/${task.createdBy.id}`}
+              className="underline underline-offset-4"
+            >
+              {task.createdBy.name ?? 'Unknown'}
+            </Link>
+            <br />
+            Updated by:{' '}
+            <Link
+              href={`/users/${task.updatedBy.id}`}
+              className="underline underline-offset-4"
+            >
+              {task.updatedBy.name ?? 'Unknown'}
+            </Link>
+          </p>
+        ) : undefined}
+      </Heading>
       <Form {...form}>
         <form
-          className="grid grid-cols-1 gap-3 p-1 md:grid-cols-2"
+          className="grid grid-cols-1 gap-3 md:grid-cols-2"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <div className="col-span-1 flex gap-2 md:col-span-2">
+          <div className="col-span-1 mb-1 grid grid-cols-2 gap-2 sm:flex md:col-span-2">
             <Button type="button" onClick={() => router.back()} variant="ghost">
               <Icons.chevronLeft className="mr-2 h-4 w-4" />
               Back
@@ -174,7 +199,20 @@ export const Render: FC<{
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-            ) : null}
+            ) : undefined}
+            {task && canCreate ? (
+              <Link href="/tasks/new">
+                <Button
+                  type="button"
+                  disabled={isSaving || isDeleting}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  <Icons.add className="mr-2 h-4 w-4" />
+                  New
+                </Button>
+              </Link>
+            ) : undefined}
           </div>
 
           <FormField
