@@ -1,7 +1,8 @@
 import { Task, TaskStatus } from '@prisma/client'
 
-import { authGuardPage } from '@/lib/auth'
-import { getData } from './actions'
+import { authGuard, checkForPermission } from '@/lib/auth'
+import { notFound } from 'next/navigation'
+import { getTasks } from './actions'
 import { Render } from './render'
 
 const TasksPage = async ({
@@ -16,7 +17,8 @@ const TasksPage = async ({
     status?: string
   }
 }) => {
-  await authGuardPage(undefined, 'TaskList')
+  const session = await authGuard(['Root', 'Normal'], 'TaskList')
+  if (!session) return notFound()
 
   const page = searchParams.page ? parseInt(searchParams.page) : 1
   const limit = searchParams.limit ? parseInt(searchParams.limit) : 10
@@ -37,7 +39,12 @@ const TasksPage = async ({
       ? (searchParams.status.split('.') as TaskStatus[])
       : undefined
 
-  const data = await getData({
+  const [canView, canCreate] = await Promise.all([
+    checkForPermission('TaskView', session),
+    checkForPermission('TaskCreate', session)
+  ])
+
+  const data = await getTasks({
     page,
     limit,
     sortBy,
@@ -47,7 +54,7 @@ const TasksPage = async ({
     status
   })
 
-  return <Render data={data} />
+  return <Render data={data} canView={canView} canCreate={canCreate} />
 }
 
 export default TasksPage

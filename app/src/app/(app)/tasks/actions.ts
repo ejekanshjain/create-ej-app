@@ -2,11 +2,11 @@
 
 import { Task, TaskStatus } from '@prisma/client'
 
-import { authGuardApi } from '@/lib/auth'
+import { authGuard } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { UnwrapPromise } from '@/types/UnwrapPromise'
 
-export const getData = async ({
+export const getTasks = async ({
   page,
   limit,
   sortBy,
@@ -23,7 +23,9 @@ export const getData = async ({
   description?: string
   status?: TaskStatus[]
 }) => {
-  await authGuardApi(undefined, 'TaskList')
+  const session = await authGuard(['Root', 'Normal'], 'TaskList')
+  if (!session) throw new Error('Unauthorized')
+
   const where = {
     title: title
       ? { contains: title, mode: 'insensitive' as const }
@@ -70,4 +72,4 @@ export const getData = async ({
   return { tasks, total }
 }
 
-export type GetDataFnDataType = UnwrapPromise<ReturnType<typeof getData>>
+export type GetTasksFnDataType = UnwrapPromise<ReturnType<typeof getTasks>>

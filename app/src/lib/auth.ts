@@ -1,6 +1,7 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { $Enums, UserType } from '@prisma/client'
 import {
+  Session,
   getServerSession,
   type DefaultSession,
   type NextAuthOptions
@@ -10,7 +11,6 @@ import GitHubProvider from 'next-auth/providers/github'
 
 import { env } from '@/env.mjs'
 import { prisma } from '@/lib/db'
-import { notFound } from 'next/navigation'
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -84,20 +84,22 @@ export const getAuthSession = () => getServerSession(authOptions)
 
 export const authGuard = async (
   types?: UserType | UserType[],
-  permission?: $Enums.Permissions
+  permission?: $Enums.Permissions,
+  session?: Session
 ) => {
-  const session = await getAuthSession()
-  if (!session) throw new Error('Unauthorized')
+  if (!session) {
+    const tempSession = await getAuthSession()
+    if (!tempSession) return false
+    session = tempSession
+  }
 
   if (types) {
-    if (Array.isArray(types) && !types.includes(session.user.type))
-      throw new Error('Access Denied')
-    if (!Array.isArray(types) && types !== session.user.type)
-      throw new Error('Access Denied')
+    if (Array.isArray(types) && !types.includes(session.user.type)) return false
+    if (!Array.isArray(types) && types !== session.user.type) return false
   }
 
   if (session.user.type !== 'Root' && permission) {
-    if (!session.user.roleId) throw new Error('Access Denied')
+    if (!session.user.roleId) return false
 
     const c = await prisma.rolePermission.count({
       where: {
@@ -105,34 +107,33 @@ export const authGuard = async (
         permission
       }
     })
-    if (!c) throw new Error('Access Denied')
+    if (!c) return false
   }
 
   return session
 }
 
-export const authGuardApi = async (
-  types?: UserType | UserType[],
-  permission?: $Enums.Permissions
+export const checkForPermission = async (
+  permission: $Enums.Permissions,
+  session?: Session
 ) => {
-  try {
-    return await authGuard(types, permission)
-  } catch (err) {
-    return {
-      error: 'Unauthorized'
-    }
+  if (!session) {
+    const tempSession = await getAuthSession()
+    if (!tempSession) return false
+    session = tempSession
   }
-}
 
-export const authGuardPage = async (
-  types?: UserType | UserType[],
-  permission?: $Enums.Permissions
-) => {
-  try {
-    return await authGuard(types, permission)
-  } catch (err) {
-    return notFound()
-  }
+  if (session.user.type === 'Root') return true
+  if (!session.user.roleId) return false
+
+  const c = await prisma.rolePermission.count({
+    where: {
+      roleId: session.user.roleId,
+      permission
+    }
+  })
+
+  return !!c
 }
 
 export const getAuthSessionWithPermissions = async () => {
