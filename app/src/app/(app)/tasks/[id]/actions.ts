@@ -27,7 +27,7 @@ export const createTask = async ({
 }: {
   title: string
   status: $Enums.TaskStatus
-  description: string
+  description?: string | null
 }) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskCreate')
   if (!session) throw new Error('Unauthorized')
@@ -57,7 +57,7 @@ export const updateTask = async ({
   id: string
   title: string
   status: $Enums.TaskStatus
-  description: string
+  description?: string | null
 }) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskUpdate')
   if (!session) throw new Error('Unauthorized')

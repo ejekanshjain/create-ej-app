@@ -51,7 +51,7 @@ import {
 const TaskSchema = z.object({
   title: z.string().nonempty(),
   status: z.nativeEnum($Enums.TaskStatus),
-  description: z.string().nonempty()
+  description: z.string().optional()
 })
 
 type FormData = z.infer<typeof TaskSchema>
