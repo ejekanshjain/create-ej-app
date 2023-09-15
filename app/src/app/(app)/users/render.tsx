@@ -1,6 +1,6 @@
 'use client'
 
-import { $Enums } from '@prisma/client'
+import { UserType } from '@prisma/client'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -14,7 +14,7 @@ import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
 import { GetUsersFnDataType } from './actions'
 
-const types = Object.values($Enums.UserType).map(x => ({
+const types = Object.values(UserType).map(x => ({
   label: generateLabel(x),
   value: x
 }))

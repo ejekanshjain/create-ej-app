@@ -1,5 +1,5 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { $Enums, UserType } from '@prisma/client'
+import { Permissions, UserType } from '@prisma/client'
 import {
   Session,
   getServerSession,
@@ -84,7 +84,7 @@ export const getAuthSession = () => getServerSession(authOptions)
 
 export const authGuard = async (
   types?: UserType | UserType[],
-  permission?: $Enums.Permissions,
+  permission?: Permissions,
   session?: Session
 ) => {
   if (!session) {
@@ -114,7 +114,7 @@ export const authGuard = async (
 }
 
 export const checkForPermission = async (
-  permission: $Enums.Permissions,
+  permission: Permissions,
   session?: Session
 ) => {
   if (!session) {

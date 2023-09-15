@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { $Enums } from '@prisma/client'
+import { Permissions } from '@prisma/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FC, useState } from 'react'
@@ -46,12 +46,12 @@ import {
 
 const RoleSchema = z.object({
   name: z.string().nonempty(),
-  permissions: z.array(z.nativeEnum($Enums.Permissions))
+  permissions: z.array(z.nativeEnum(Permissions))
 })
 
 type FormData = z.infer<typeof RoleSchema>
 
-const permissions = Object.values($Enums.Permissions).map(x => ({
+const permissions = Object.values(Permissions).map(x => ({
   label: generateLabel(x),
   value: x
 }))

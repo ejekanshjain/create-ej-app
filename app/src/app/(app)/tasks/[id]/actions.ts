@@ -1,6 +1,6 @@
 'use server'
 
-import { $Enums } from '@prisma/client'
+import { TaskStatus } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 import { authGuard } from '@/lib/auth'
@@ -40,7 +40,7 @@ export const createTask = async ({
   description
 }: {
   title: string
-  status: $Enums.TaskStatus
+  status: TaskStatus
   description?: string | null
 }) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskCreate')
@@ -70,7 +70,7 @@ export const updateTask = async ({
 }: {
   id: string
   title: string
-  status: $Enums.TaskStatus
+  status: TaskStatus
   description?: string | null
 }) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskUpdate')

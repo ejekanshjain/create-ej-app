@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { $Enums } from '@prisma/client'
+import { TaskStatus } from '@prisma/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FC, useState } from 'react'
@@ -53,13 +53,13 @@ import {
 
 const TaskSchema = z.object({
   title: z.string().nonempty(),
-  status: z.nativeEnum($Enums.TaskStatus),
+  status: z.nativeEnum(TaskStatus),
   description: z.string().optional()
 })
 
 type FormData = z.infer<typeof TaskSchema>
 
-const statuses = Object.values($Enums.TaskStatus).map(x => ({
+const statuses = Object.values(TaskStatus).map(x => ({
   label: generateLabel(x),
   value: x
 }))

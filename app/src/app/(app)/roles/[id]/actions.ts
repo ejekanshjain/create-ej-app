@@ -1,6 +1,6 @@
 'use server'
 
-import { $Enums } from '@prisma/client'
+import { Permissions } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 import { authGuard } from '@/lib/auth'
@@ -28,7 +28,7 @@ export const createRole = async ({
   permissions
 }: {
   name: string
-  permissions: $Enums.Permissions[]
+  permissions: Permissions[]
 }) => {
   const session = await authGuard(['Root'])
   if (!session) throw new Error('Unauthorized')
@@ -59,7 +59,7 @@ export const updateRole = async ({
 }: {
   id: string
   name: string
-  permissions: $Enums.Permissions[]
+  permissions: Permissions[]
 }) => {
   const session = await authGuard(['Root'])
   if (!session) throw new Error('Unauthorized')
