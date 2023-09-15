@@ -96,8 +96,11 @@ export const authGuard = async (
   if (session.user.type === 'Root') return session
 
   if (types) {
-    if (Array.isArray(types) && !types.includes(session.user.type)) return false
-    else if (types !== session.user.type) return false
+    if (Array.isArray(types)) {
+      if (!types.includes(session.user.type)) return false
+    } else {
+      if (types !== session.user.type) return false
+    }
   }
 
   if (!session.user.roleId || !permission) return false
