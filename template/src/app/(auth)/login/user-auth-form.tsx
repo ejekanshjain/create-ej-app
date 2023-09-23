@@ -34,6 +34,7 @@ export const UserAuthForm: FC = ({
     resolver: zodResolver(userAuthSchema)
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isGithubLoading, setIsGithubLoading] = useState(false)
 
   const searchParams = useSearchParams()
@@ -87,7 +88,10 @@ export const UserAuthForm: FC = ({
               </p>
             )}
           </div>
-          <Button disabled={isLoading || isGithubLoading} type="submit">
+          <Button
+            disabled={isLoading || isGoogleLoading || isGithubLoading}
+            type="submit"
+          >
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
@@ -105,24 +109,44 @@ export const UserAuthForm: FC = ({
           </span>
         </div>
       </div>
-      <Button
-        variant="outline"
-        onClick={async () => {
-          setIsGithubLoading(true)
-          await signIn('github', {
-            callbackUrl: searchParams?.get('from') || '/dashboard'
-          })
-          setIsGithubLoading(false)
-        }}
-        disabled={isLoading || isGithubLoading}
-      >
-        {isGithubLoading ? (
-          <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <Icons.github className="mr-2 h-4 w-4" />
-        )}
-        Github
-      </Button>
+      <div className="grid gap-2">
+        <Button
+          variant="outline"
+          onClick={async () => {
+            setIsGoogleLoading(true)
+            await signIn('google', {
+              callbackUrl: searchParams?.get('from') || '/dashboard'
+            })
+            setIsGoogleLoading(false)
+          }}
+          disabled={isLoading || isGoogleLoading || isGithubLoading}
+        >
+          {isGoogleLoading ? (
+            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Icons.google className="mr-2 h-4 w-4" />
+          )}
+          Google
+        </Button>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            setIsGithubLoading(true)
+            await signIn('github', {
+              callbackUrl: searchParams?.get('from') || '/dashboard'
+            })
+            setIsGithubLoading(false)
+          }}
+          disabled={isLoading || isGoogleLoading || isGithubLoading}
+        >
+          {isGithubLoading ? (
+            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Icons.github className="mr-2 h-4 w-4" />
+          )}
+          Github
+        </Button>
+      </div>
     </div>
   )
 }
