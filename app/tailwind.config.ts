@@ -1,5 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-const tailwindConfig = {
+import type { Config } from 'tailwindcss'
+
+const tailwindConfig: Config = {
   darkMode: ['class'],
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
@@ -11,6 +12,11 @@ const tailwindConfig = {
       }
     },
     extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':
+          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
