@@ -56,12 +56,6 @@ export const Render: FC<{
               )
           },
           {
-            accessorKey: 'description',
-            header: ({ column }) => (
-              <DataTableColumnHeader column={column} title="Description" />
-            )
-          },
-          {
             accessorKey: 'status',
             header: ({ column }) => (
               <DataTableColumnHeader column={column} title="Status" />
@@ -105,10 +99,6 @@ export const Render: FC<{
           {
             id: 'title',
             title: 'Title'
-          },
-          {
-            id: 'description',
-            title: 'Description'
           }
         ]}
         filterableColumns={[

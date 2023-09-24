@@ -41,7 +41,7 @@ export const createTask = async ({
 }: {
   title: string
   status: TaskStatus
-  description?: string | null
+  description?: any
 }) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskCreate')
   if (!session) throw new Error('Unauthorized')
@@ -71,7 +71,7 @@ export const updateTask = async ({
   id: string
   title: string
   status: TaskStatus
-  description?: string | null
+  description?: any
 }) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskUpdate')
   if (!session) throw new Error('Unauthorized')

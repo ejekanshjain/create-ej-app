@@ -1,10 +1,12 @@
 'use client'
 
+import EditorJS from '@editorjs/editorjs'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TaskStatus } from '@prisma/client'
+import edjsHTML from 'editorjs-html'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FC, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -40,10 +42,10 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
+import '@/styles/editor.css'
 import {
   GetTaskFnDataType,
   createTask,
@@ -53,8 +55,7 @@ import {
 
 const TaskSchema = z.object({
   title: z.string().nonempty(),
-  status: z.nativeEnum(TaskStatus),
-  description: z.string().optional()
+  status: z.nativeEnum(TaskStatus)
 })
 
 type FormData = z.infer<typeof TaskSchema>
@@ -63,6 +64,8 @@ const statuses = Object.values(TaskStatus).map(x => ({
   label: generateLabel(x),
   value: x
 }))
+
+const edjsParser = edjsHTML()
 
 export const Render: FC<{
   task: GetTaskFnDataType | undefined
@@ -74,24 +77,89 @@ export const Render: FC<{
     resolver: zodResolver(TaskSchema),
     defaultValues: {
       title: task?.title ?? '',
-      status: task?.status || 'Todo',
-      description: task?.description ?? ''
+      status: task?.status || 'Todo'
     }
   })
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isEditorMounted, setIsMounted] = useState<boolean>(false)
+
+  const editorRef = useRef<EditorJS>()
+
+  const initializeEditor = useCallback(async () => {
+    const EditorJS = (await import('@editorjs/editorjs')).default
+
+    // @ts-ignore
+    const Table = (await import('@editorjs/table')).default
+    // @ts-ignore
+    const List = (await import('@editorjs/list')).default
+    // @ts-ignore
+    const Image = (await import('@editorjs/image')).default
+    // @ts-ignore
+    const Header = (await import('@editorjs/header')).default
+    // @ts-ignore
+    const Quote = (await import('@editorjs/quote')).default
+    // @ts-ignore
+    const CheckList = (await import('@editorjs/checklist')).default
+    // @ts-ignore
+    const Delimiter = (await import('@editorjs/delimiter')).default
+
+    if (!editorRef.current) {
+      const editor = new EditorJS({
+        holder: 'editor',
+        onReady() {
+          editorRef.current = editor
+        },
+        placeholder: 'Type here to write...',
+        inlineToolbar: true,
+        data: task?.description as any,
+        tools: {
+          header: Header,
+          list: List,
+          image: Image,
+          table: Table,
+          checklist: CheckList,
+          quote: Quote,
+          delimiter: Delimiter
+        }
+      })
+    }
+  }, [task?.description])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isEditorMounted) return
+
+    initializeEditor()
+
+    return () => {
+      editorRef.current?.destroy()
+      editorRef.current = undefined
+    }
+  }, [isEditorMounted, initializeEditor])
+
+  const editorHTML = useMemo(() => {
+    if (!task?.description) return ''
+    return edjsParser.parse(task.description as any).join('')
+  }, [task?.description])
+  console.log(editorHTML)
 
   async function onSubmit(data: FormData) {
     setIsSaving(true)
     try {
+      const description = await editorRef.current?.save()
       if (!task) {
-        const newId = await createTask(data)
+        const newId = await createTask({ ...data, description })
         router.replace(`/tasks/${newId}`)
       } else {
         await updateTask({
           id: task.id,
-          ...data
+          ...data,
+          description
         })
       }
       toast({
@@ -243,23 +311,21 @@ export const Render: FC<{
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter description here"
-                    disabled={isSaving}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {isEditorMounted ? (
+            <div className="col-span-1 md:col-span-2 w-full mt-5">
+              <h3 className="w-full bg-transparent text-3xl font-bold">
+                Description
+              </h3>
+              <div id="editor" className="min-h-[360px] w-full" />
+              <p className="text-sm text-gray-500">
+                Use{' '}
+                <kbd className="rounded-md border bg-muted px-1 text-xs uppercase">
+                  Tab
+                </kbd>{' '}
+                to open the command menu.
+              </p>
+            </div>
+          ) : undefined}
         </form>
       </Form>
       {task ? (

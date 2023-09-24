@@ -12,7 +12,6 @@ export const getTasks = async ({
   sortBy,
   sortOrder,
   title,
-  description,
   status
 }: {
   page: number
@@ -20,7 +19,6 @@ export const getTasks = async ({
   sortBy?: keyof Task
   sortOrder?: 'asc' | 'desc'
   title?: string
-  description?: string
   status?: TaskStatus[]
 }) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskList')
@@ -30,9 +28,6 @@ export const getTasks = async ({
     title: title
       ? { contains: title, mode: 'insensitive' as const }
       : undefined,
-    description: description
-      ? { contains: description, mode: 'insensitive' as const }
-      : undefined,
     status: status?.length ? { in: status } : undefined
   }
   const [tasks, total] = await Promise.all([
@@ -41,7 +36,6 @@ export const getTasks = async ({
       select: {
         id: true,
         title: true,
-        description: true,
         status: true,
         createdAt: true,
         updatedAt: true,

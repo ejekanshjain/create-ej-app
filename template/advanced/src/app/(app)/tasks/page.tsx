@@ -19,7 +19,6 @@ const TasksPage = async ({
     limit?: string
     sort?: string
     title?: string
-    description?: string
     status?: string
   }
 }) => {
@@ -38,7 +37,6 @@ const TasksPage = async ({
       : []
 
   const title = searchParams.title
-  const description = searchParams.description
 
   const status =
     typeof searchParams.status === 'string'
@@ -56,7 +54,6 @@ const TasksPage = async ({
     sortBy,
     sortOrder,
     title,
-    description,
     status
   })
 
