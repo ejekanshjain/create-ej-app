@@ -28,10 +28,11 @@ program
         name: 'template',
         message: 'Select a template:',
         choices: [
-          { name: 'Base', value: 'base' },
+          { name: 'base', message: 'Base' },
           {
-            name: 'With User Types and ACLs (roles & permissions)',
-            value: 'advanced'
+            name: 'advanced',
+            message:
+              'Advanced setup with User Types and ACLs (roles & permissions)'
           }
         ],
         initial: 0
@@ -80,7 +81,8 @@ To get started, run the following commands:
 
 cd ${projectName}
 npm install
-npm run dev`)
+npm run dev
+`)
   })
 
 program.parse(process.argv)
