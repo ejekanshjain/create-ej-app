@@ -1,5 +1,5 @@
 {
-  "name": "@ejekanshjain/create-ej-app",
+  "name": "create-ej-app",
   "version": "1.0.0",
   "description": "Bootstrap a next.js app with my preferred setup",
   "main": "cli.js",
