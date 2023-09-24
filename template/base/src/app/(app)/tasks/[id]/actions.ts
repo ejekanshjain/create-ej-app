@@ -37,11 +37,13 @@ export type GetTaskFnDataType = UnwrapPromise<ReturnType<typeof getTask>>
 export const createTask = async ({
   title,
   status,
-  description
+  description,
+  imageIds
 }: {
   title: string
   status: TaskStatus
   description?: any
+  imageIds: string[]
 }) => {
   const session = await getAuthSession()
   if (!session) throw new Error('Unauthorized')
@@ -55,6 +57,25 @@ export const createTask = async ({
       updatedById: session.user.id
     }
   })
+  await prisma.resource.updateMany({
+    where: {
+      taskId: id
+    },
+    data: {
+      taskId: null
+    }
+  })
+  if (imageIds.length)
+    await prisma.resource.updateMany({
+      where: {
+        id: {
+          in: imageIds
+        }
+      },
+      data: {
+        taskId: id
+      }
+    })
 
   revalidatePath('/tasks')
   revalidatePath(`/tasks/${id}`)
@@ -66,12 +87,14 @@ export const updateTask = async ({
   id,
   title,
   status,
-  description
+  description,
+  imageIds
 }: {
   id: string
   title: string
   status: TaskStatus
   description?: any
+  imageIds: string[]
 }) => {
   const session = await getAuthSession()
   if (!session) throw new Error('Unauthorized')
@@ -87,6 +110,25 @@ export const updateTask = async ({
       updatedById: session.user.id
     }
   })
+  await prisma.resource.updateMany({
+    where: {
+      taskId: id
+    },
+    data: {
+      taskId: null
+    }
+  })
+  if (imageIds.length)
+    await prisma.resource.updateMany({
+      where: {
+        id: {
+          in: imageIds
+        }
+      },
+      data: {
+        taskId: id
+      }
+    })
 
   revalidatePath('/tasks')
   revalidatePath(`/tasks/${id}`)

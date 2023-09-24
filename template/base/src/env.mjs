@@ -28,7 +28,11 @@ export const env = createEnv({
     GOOGLE_ID: z.string().min(1),
     GOOGLE_SECRET: z.string().min(1),
     GITHUB_ID: z.string().min(1),
-    GITHUB_SECRET: z.string().min(1)
+    GITHUB_SECRET: z.string().min(1),
+    FIREBASE_PROJECT_ID: z.string().min(1),
+    FIREBASE_PRIVATE_KEY: z.string().min(1),
+    FIREBASE_CLIENT_EMAIL: z.string().min(1),
+    FIREBASE_STORAGE_BUCKET: z.string().min(1)
   },
 
   /**
@@ -57,7 +61,11 @@ export const env = createEnv({
     GOOGLE_ID: process.env.GOOGLE_ID,
     GOOGLE_SECRET: process.env.GOOGLE_SECRET,
     GITHUB_ID: process.env.GITHUB_ID,
-    GITHUB_SECRET: process.env.GITHUB_SECRET
+    GITHUB_SECRET: process.env.GITHUB_SECRET,
+    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+    FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
+    FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+    FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

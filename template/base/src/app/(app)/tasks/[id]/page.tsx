@@ -17,7 +17,7 @@ const TaskPage = async ({
     id: string
   }
 }) => {
-  const task = id === 'new' ? await getTask(id) : undefined
+  const task = id !== 'new' ? await getTask(id) : undefined
 
   return <Render task={task} />
 }

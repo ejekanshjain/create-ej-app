@@ -87,6 +87,8 @@ model Task {
     status      TaskStatus
     description Json?
 
+    images Resource[] @relation("taskImages")
+
     createdAt   DateTime @default(now()) @db.Timestamptz()
     updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz()
     createdById String
@@ -95,4 +97,19 @@ model Task {
     updatedBy   User     @relation("updatedTasks", fields: [updatedById], references: [id], onDelete: Cascade)
 
     @@map("Tasks")
+}
+
+model Resource {
+    id               String @id @default(cuid())
+    originalFilename String
+    newFilename      String @unique
+    url              String @unique
+
+    taskId String?
+    task   Task?   @relation("taskImages", fields: [taskId], references: [id])
+
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz()
+
+    @@map("Resources")
 }

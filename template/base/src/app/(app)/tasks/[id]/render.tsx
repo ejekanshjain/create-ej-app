@@ -114,7 +114,35 @@ export const Render: FC<{
         tools: {
           header: Header,
           list: List,
-          image: Image,
+          image: {
+            class: Image,
+            config: {
+              uploader: {
+                async uploadByFile(file: any) {
+                  const formData = new FormData()
+                  formData.append('file', file)
+                  const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                  })
+                  const json = await res.json()
+                  if (json.success && json.id && json.url) {
+                    return {
+                      success: true,
+                      file: {
+                        id: json.id,
+                        url: json.url
+                      }
+                    }
+                  } else {
+                    return {
+                      success: false
+                    }
+                  }
+                }
+              }
+            }
+          },
           table: Table,
           checklist: CheckList,
           quote: Quote,
@@ -148,15 +176,32 @@ export const Render: FC<{
   async function onSubmit(data: FormData) {
     setIsSaving(true)
     try {
-      const description = await editorRef.current?.save()
+      const editorData = await editorRef.current?.save()
+      const imageIds: string[] = []
+      if (editorData?.blocks)
+        for (const b of editorData.blocks)
+          if (
+            b.type === 'image' &&
+            b.data &&
+            b.data.file &&
+            b.data.file.id &&
+            b.data.file.url
+          )
+            imageIds.push(b.data.file.id)
+
       if (!task) {
-        const newId = await createTask({ ...data, description })
+        const newId = await createTask({
+          ...data,
+          description: editorData,
+          imageIds
+        })
         router.replace(`/tasks/${newId}`)
       } else {
         await updateTask({
           id: task.id,
           ...data,
-          description
+          description: editorData,
+          imageIds
         })
       }
       toast({
