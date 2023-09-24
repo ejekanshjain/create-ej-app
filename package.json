@@ -9,10 +9,6 @@
   "bin": {
     "create-ej-app": "cli.js"
   },
-  "files": [
-    "cli.js",
-    "template"
-  ],
   "keywords": [
     "create-ej-app",
     "nextjs",

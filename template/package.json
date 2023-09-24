@@ -1,6 +1,7 @@
 {
-  "name": "@create-ej-app/app",
+  "name": "my-app",
   "version": "1.0.0",
+  "description": "A Legendary Next.js App",
   "private": true,
   "scripts": {
     "postinstall": "prisma generate",
