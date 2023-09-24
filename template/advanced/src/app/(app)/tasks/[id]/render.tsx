@@ -312,7 +312,7 @@ export const Render: FC<{
           />
 
           {isEditorMounted ? (
-            <div className="col-span-1 md:col-span-2 w-full mt-5">
+            <div className="col-span-1 md:col-span-2 w-full mt-5 prose prose-neutral mx-auto dark:prose-invert">
               <h3 className="w-full bg-transparent text-3xl font-bold">
                 Description
               </h3>
