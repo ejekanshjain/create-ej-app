@@ -7,7 +7,7 @@ const { prompt } = require('enquirer')
 const copydir = require('copy-dir')
 
 program
-  .version('2.0.0')
+  .version('2.1.0')
   .description('CLI tool to bootstrap a Next.js App')
   .action(async () => {
     const response = await prompt([
@@ -15,7 +15,7 @@ program
         type: 'input',
         name: 'projectName',
         message: 'Enter the project name:',
-        initial: 'my-app'
+        initial: 'ej-app'
       },
       {
         type: 'input',
@@ -30,7 +30,7 @@ program
         choices: [
           { name: 'Base', value: 'base' },
           {
-            name: 'With user types and ACLs (roles & permissions)',
+            name: 'With User Types and ACLs (roles & permissions)',
             value: 'advanced'
           }
         ],
