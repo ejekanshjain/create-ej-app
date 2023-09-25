@@ -111,5 +111,6 @@ model Resource {
     createdAt DateTime @default(now()) @db.Timestamptz()
     updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz()
 
+    @@index([taskId])
     @@map("Resources")
 }

@@ -5,7 +5,40 @@ import { revalidatePath } from 'next/cache'
 
 import { authGuard } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { storageClient } from '@/lib/storageClient'
 import { UnwrapPromise } from '@/types/UnwrapPromise'
+
+const handleImages = async (imageIds: string[], taskId: string) => {
+  const prevImages = await prisma.resource.findMany({
+    where: {
+      taskId
+    }
+  })
+
+  for (const p of prevImages) {
+    if (imageIds.includes(p.id)) continue
+    await Promise.all([
+      storageClient.deleteFile(p.newFilename),
+      prisma.resource.delete({
+        where: {
+          id: p.id
+        }
+      })
+    ])
+  }
+
+  if (imageIds.length)
+    await prisma.resource.updateMany({
+      where: {
+        id: {
+          in: imageIds
+        }
+      },
+      data: {
+        taskId
+      }
+    })
+}
 
 export const getTask = async (id: string) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskView')
@@ -57,25 +90,7 @@ export const createTask = async ({
       updatedById: session.user.id
     }
   })
-  await prisma.resource.updateMany({
-    where: {
-      taskId: id
-    },
-    data: {
-      taskId: null
-    }
-  })
-  if (imageIds.length)
-    await prisma.resource.updateMany({
-      where: {
-        id: {
-          in: imageIds
-        }
-      },
-      data: {
-        taskId: id
-      }
-    })
+  await handleImages(imageIds, id)
 
   revalidatePath('/tasks')
   revalidatePath(`/tasks/${id}`)
@@ -110,25 +125,7 @@ export const updateTask = async ({
       updatedById: session.user.id
     }
   })
-  await prisma.resource.updateMany({
-    where: {
-      taskId: id
-    },
-    data: {
-      taskId: null
-    }
-  })
-  if (imageIds.length)
-    await prisma.resource.updateMany({
-      where: {
-        id: {
-          in: imageIds
-        }
-      },
-      data: {
-        taskId: id
-      }
-    })
+  await handleImages(imageIds, id)
 
   revalidatePath('/tasks')
   revalidatePath(`/tasks/${id}`)
@@ -138,6 +135,7 @@ export const deleteTask = async (id: string) => {
   const session = await authGuard(['Root', 'Normal'], 'TaskDelete')
   if (!session) throw new Error('Unauthorized')
 
+  await handleImages([], id)
   await prisma.task.delete({
     where: {
       id

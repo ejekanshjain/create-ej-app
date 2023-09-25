@@ -1,17 +1,8 @@
-import { GCPStorageClient } from '@ejekanshjain/cloud-storage'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { env } from '@/env.mjs'
 import { getAuthSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-
-const storageClient = GCPStorageClient({
-  projectId: env.FIREBASE_PROJECT_ID!,
-  privateKey: env.FIREBASE_PRIVATE_KEY!,
-  clientEmail: env.FIREBASE_CLIENT_EMAIL!,
-  bucket: env.FIREBASE_STORAGE_BUCKET!,
-  defaultMediaPublic: true
-})
+import { storageClient } from '@/lib/storageClient'
 
 export async function POST(request: NextRequest) {
   const session = await getAuthSession()
