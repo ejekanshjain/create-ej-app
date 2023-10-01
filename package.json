@@ -2,10 +2,10 @@
   "name": "create-ej-app",
   "version": "2.3.0",
   "description": "Bootstrap a next.js app with my preferred setup",
-  "main": "cli.js",
+  "main": "./dist/cli.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node ."
   },
   "bin": {
     "create-ej-app": "cli.js"
