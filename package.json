@@ -2,7 +2,7 @@
   "name": "create-ej-app",
   "version": "2.3.0",
   "description": "Bootstrap a next.js app with my preferred setup",
-  "main": "./dist/cli.js",
+  "main": "cli.js",
   "scripts": {
     "build": "tsc",
     "start": "node ."
@@ -41,5 +41,6 @@
     "@types/commander": "^2.12.2",
     "@types/node": "^20.8.0",
     "@types/react": "^18.2.24"
-  }
+  },
+  "files": ["dist"]
 }
