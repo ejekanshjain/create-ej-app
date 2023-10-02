@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-//@ts-ignore
+
 import { program } from 'commander';
-import * as fs from 'fs';
-import * as path from 'path';
 import { prompt } from 'enquirer';
+import fs from 'fs';
+import path from 'path';
 //@ts-ignore
 import copydir from 'copy-dir';
 
@@ -19,7 +19,7 @@ program.action(async () => {
       type: 'input',
       name: 'projectName',
       message: 'Enter the project name:',
-      initial: 'ej-app'
+      initial: 'my-app'
     },
     {
       type: 'input',
