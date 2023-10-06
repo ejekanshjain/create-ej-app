@@ -76,4 +76,4 @@ const tailwindConfig: Config = {
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')]
 }
 
-module.exports = tailwindConfig
+export default tailwindConfig

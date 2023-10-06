@@ -8,4 +8,4 @@ const prettierConfig: Config = {
   singleQuote: true
 }
 
-module.exports = prettierConfig
+export default prettierConfig
