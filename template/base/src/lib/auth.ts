@@ -1,4 +1,5 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { User as PrismaUser } from '@prisma/client'
 import {
   getServerSession,
   type DefaultSession,
@@ -24,7 +25,7 @@ declare module 'next-auth' {
     } & DefaultSession['user']
   }
 
-  interface User {}
+  interface User extends PrismaUser {}
 }
 
 /**

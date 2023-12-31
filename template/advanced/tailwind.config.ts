@@ -1,8 +1,9 @@
 import type { Config } from 'tailwindcss'
 
-const tailwindConfig: Config = {
+const config = {
   darkMode: ['class'],
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  prefix: '',
   theme: {
     container: {
       center: true,
@@ -74,6 +75,6 @@ const tailwindConfig: Config = {
     }
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')]
-}
+} satisfies Config
 
-export default tailwindConfig
+export default config
