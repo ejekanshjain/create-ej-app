@@ -4,6 +4,7 @@
   "description": "A Legendary Next.js App",
   "private": true,
   "scripts": {
+    "format": "prettier --write \"src/**/*.{js,cjs,mjs,jsx,ts,tsx}\"",
     "lint": "next lint",
     "dev": "next dev",
     "build": "next build",
@@ -14,11 +15,16 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.2.0",
+    "@hookform/resolvers": "^3.6.0",
     "@paralleldrive/cuid2": "^2.2.2",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-slot": "^1.0.2",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tailwindcss/typography": "^0.5.13",
     "@types/eslint": "^8.56.10",
     "@types/node": "^20.14.2",
+    "@types/nodemailer": "^6.4.15",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
@@ -44,13 +50,11 @@
     "prettier-plugin-tailwindcss": "^0.6.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.52.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.5",
     "zod": "^3.23.8"
-  },
-  "devDependencies": {
-    "@types/nodemailer": "^6.4.15"
   }
 }
