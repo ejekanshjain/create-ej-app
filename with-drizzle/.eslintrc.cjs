@@ -1,24 +1,26 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const path = require('path')
-
 /** @type {import("eslint").Linter.Config} */
 const eslintConfig = {
-  overrides: [
-    {
-      extends: [],
-      files: ['*.ts', '*.tsx'],
-      parserOptions: {
-        project: path.join(__dirname, 'tsconfig.json')
-      }
-    }
-  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: path.join(__dirname, 'tsconfig.json')
+    project: true
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'drizzle'],
   extends: ['next/core-web-vitals'],
-  rules: {}
+  rules: {
+    '@typescript-eslint/array-type': 'off',
+    'drizzle/enforce-delete-with-where': [
+      'error',
+      {
+        drizzleObjectName: ['db', 'ctx.db']
+      }
+    ],
+    'drizzle/enforce-update-with-where': [
+      'error',
+      {
+        drizzleObjectName: ['db', 'ctx.db']
+      }
+    ]
+  }
 }
 
 module.exports = eslintConfig
