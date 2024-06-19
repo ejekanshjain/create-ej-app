@@ -1,7 +1,6 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Permissions } from '@prisma/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FC, useState } from 'react'
@@ -34,9 +33,9 @@ import {
   FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { toast } from '@/components/ui/use-toast'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
+import { toast } from 'sonner'
 import {
   GetRoleFnDataType,
   createRole,
@@ -46,7 +45,7 @@ import {
 
 const RoleSchema = z.object({
   name: z.string().min(1),
-  permissions: z.array(z.nativeEnum(Permissions))
+  permissions: z.array(z.string())
 })
 
 type FormData = z.infer<typeof RoleSchema>
@@ -82,14 +81,9 @@ export const Render: FC<{
           ...data
         })
       }
-      toast({
-        title: 'Role saved'
-      })
+      toast('Role saved')
     } catch (err) {
-      toast({
-        title: 'Error saving role',
-        variant: 'destructive'
-      })
+      toast('Error saving role')
     }
     setIsSaving(false)
   }
@@ -147,15 +141,10 @@ export const Render: FC<{
                         setIsDeleting(true)
                         try {
                           await deleteRole(role.id)
-                          toast({
-                            title: 'Role deleted'
-                          })
+                          toast('Role deleted')
                           router.push('/roles')
                         } catch (err) {
-                          toast({
-                            title: 'Error deleting role',
-                            variant: 'destructive'
-                          })
+                          toast('Error deleting role')
                         }
                         setIsDeleting(false)
                       }}

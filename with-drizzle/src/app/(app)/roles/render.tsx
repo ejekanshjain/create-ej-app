@@ -53,7 +53,8 @@ export const Render: FC<{
             header: ({ column }) => (
               <DataTableColumnHeader column={column} title="Updated At" />
             ),
-            cell: ({ row }) => timesAgo(row.original.updatedAt)
+            cell: ({ row }) =>
+              row.original.updatedAt ? timesAgo(row.original.updatedAt) : null
           }
         ]}
         data={data.roles}

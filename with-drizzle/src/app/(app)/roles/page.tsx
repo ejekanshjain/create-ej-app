@@ -1,9 +1,10 @@
-import { Role } from '@prisma/client'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { Role } from '@/db/schema'
 import { authGuard } from '@/lib/auth'
 import { siteConfig } from '@/lib/siteConfig'
+import { InferSelectModel } from 'drizzle-orm'
 import { getRoles } from './actions'
 import { Render } from './render'
 
@@ -30,7 +31,7 @@ const RolesPage = async ({
   const [sortBy, sortOrder] =
     typeof searchParams.sort === 'string'
       ? (searchParams.sort.split('.') as [
-          keyof Role | undefined,
+          keyof InferSelectModel<typeof Role> | undefined,
           'asc' | 'desc' | undefined
         ])
       : []

@@ -1,10 +1,12 @@
 'use server'
 
-import { Role } from '@prisma/client'
-
+import { db } from '@/db'
+import { Role } from '@/db/schema'
 import { authGuard } from '@/lib/auth'
-import { prisma } from '@/lib/db'
 import { UnwrapPromise } from '@/types/UnwrapPromise'
+import { InferSelectModel, asc, count, desc, ilike } from 'drizzle-orm'
+
+type RoleType = InferSelectModel<typeof Role>
 
 export const getRoles = async ({
   page,
@@ -15,50 +17,53 @@ export const getRoles = async ({
 }: {
   page: number
   limit: number
-  sortBy?: keyof Role
+  sortBy?: keyof RoleType
   sortOrder?: 'asc' | 'desc'
   name?: string
 }) => {
   const session = await authGuard(['Root'])
   if (!session) throw new Error('Unauthorized')
 
-  const where = {
-    name: name ? { contains: name, mode: 'insensitive' as const } : undefined
-  }
+  let countQ = db
+    .select({
+      count: count()
+    })
+    .from(Role)
+
+  if (name) countQ.where(ilike(Role.name, `%${name}%`))
+
   const [roles, total] = await Promise.all([
-    prisma.role.findMany({
-      where,
-      select: {
+    db.query.Role.findMany({
+      columns: {
         id: true,
         name: true,
         createdAt: true,
         updatedAt: true
       },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: {
-        [sortBy || 'createdAt']: sortOrder || 'desc'
-      }
+      where: name ? ilike(Role.name, `%${name}%`) : undefined,
+      orderBy: [
+        sortOrder === 'asc'
+          ? asc(Role[sortBy || 'createdAt'])
+          : desc(Role[sortBy || 'createdAt'])
+      ],
+      offset: (page - 1) * limit,
+      limit
     }),
-    prisma.role.count({
-      where
-    })
+    countQ
   ])
 
-  return { roles, total }
+  return { roles, total: total[0]?.count || 0 }
 }
 
 export type GetRolesFnDataType = UnwrapPromise<ReturnType<typeof getRoles>>
 
 export const getRolesMini = async () => {
-  return await prisma.role.findMany({
-    select: {
+  return await db.query.Role.findMany({
+    columns: {
       id: true,
       name: true
     },
-    orderBy: {
-      name: 'asc'
-    }
+    orderBy: [asc(Role.name)]
   })
 }
 
