@@ -11,8 +11,8 @@ import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-// import { toast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/cn'
+import { toast } from 'sonner'
 
 const userAuthSchema = z.object({
   email: z.string().email()
@@ -51,17 +51,14 @@ export const UserAuthForm: FC = ({
     setIsLoading(false)
 
     if (!signInResult?.ok) {
-      // return toast({
-      //   title: 'Something went wrong.',
-      //   description: 'Your sign in request failed. Please try again.',
-      //   variant: 'destructive'
-      // })
+      return toast('Something went wrong.', {
+        description: 'Your sign in request failed. Please try again.'
+      })
     }
 
-    // return toast({
-    //   title: 'Check your email',
-    //   description: 'We sent you a login link. Be sure to check your spam too.'
-    // })
+    return toast('Check your email', {
+      description: 'We sent you a login link. Be sure to check your spam too.'
+    })
   }
 
   return (

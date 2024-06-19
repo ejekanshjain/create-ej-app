@@ -2,6 +2,7 @@ import { GeistSans } from 'geist/font/sans'
 import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 
+import { Toaster } from '@/components/ui/sonner'
 import { siteConfig } from '@/lib/siteConfig'
 import './globals.css'
 
@@ -20,6 +21,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
