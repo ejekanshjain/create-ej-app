@@ -20,6 +20,7 @@ import {
 } from '@/db/schema'
 import { env } from '@/env.mjs'
 import { Adapter } from 'next-auth/adapters'
+import { cache } from 'react'
 
 type UserType = InferSelectModel<typeof User>['type']
 type PermissionsType = InferSelectModel<typeof RolePermission>['permission']
@@ -82,7 +83,7 @@ export const authOptions: NextAuthOptions = {
   ]
 }
 
-export const getAuthSession = () => getServerSession(authOptions)
+export const getAuthSession = cache(() => getServerSession(authOptions))
 
 export const authGuard = async (
   types?: UserType | UserType[],

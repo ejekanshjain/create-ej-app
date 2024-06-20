@@ -25,11 +25,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { updateName } from './actions'
-
-const userSchema = z.object({
-  name: z.string().min(1)
-})
+import { updateNameAction } from './actions'
+import { userSchema } from './validation'
 
 type FormData = z.infer<typeof userSchema>
 
@@ -46,13 +43,14 @@ export const Render: FC<{ name: string }> = ({ name }) => {
   async function onSubmit(data: FormData) {
     setIsSaving(true)
 
-    try {
-      await updateName({
-        ...data
-      })
+    const res = await updateNameAction({
+      ...data
+    })
+
+    if (res?.data) {
       toast('Your name has been updated.')
       router.refresh()
-    } catch (err) {
+    } else {
       toast('Internal Server Error', {
         description: 'Please try again later.'
       })

@@ -1,18 +1,17 @@
 'use server'
 
-import { db } from '@/db'
-import { User } from '@/db/schema'
-import { getAuthSession } from '@/lib/auth'
-import { eq } from 'drizzle-orm'
+import { authActionClient } from '@/lib/safe-action'
+import { updateUserNameUseCase } from '@/use-case/user'
+import { userSchema } from './validation'
 
-export const updateName = async ({ name }: { name: string }) => {
-  const session = await getAuthSession()
-  if (!session?.user) throw new Error('Unauthorized')
-
-  await db
-    .update(User)
-    .set({
+export const updateNameAction = authActionClient
+  .schema(userSchema)
+  .action(async ({ parsedInput: { name }, ctx: { user } }) => {
+    await updateUserNameUseCase(user.id, {
       name
     })
-    .where(eq(User.id, session.user.id))
-}
+
+    return {
+      success: true
+    }
+  })

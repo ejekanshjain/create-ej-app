@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { ReactNode } from 'react'
 
-// import { AppNavCommand } from '@/components/app-nav-command'
+import { AppNavCommand } from '@/components/app-nav-command'
 import { MainNav } from '@/components/main-nav'
 import { SideNav } from '@/components/side-nav'
 import { SiteFooter } from '@/components/site-footer'
@@ -50,11 +50,11 @@ const Layout = async ({ children }: { children: ReactNode }) => {
             ]}
           />
           <div className="flex items-center justify-center space-x-4">
-            {/* <AppNavCommand
+            <AppNavCommand
               modules={{
                 task: true
               }}
-            /> */}
+            />
             <UserAccountNav
               user={{
                 name: session.user.name,
