@@ -26,7 +26,7 @@ const RolesPage = async ({
 
   const g = await authGuard(session)
 
-  if (g) return notFound()
+  if (!g) return notFound()
 
   const page = searchParams.page ? parseInt(searchParams.page) : 1
   const limit = searchParams.limit ? parseInt(searchParams.limit) : 10
