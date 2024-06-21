@@ -1,14 +1,25 @@
 'use server'
 
+import { RoleType, getRoles } from '@/data-access/role'
 import { db } from '@/db'
 import { Role } from '@/db/schema'
 import { authGuard } from '@/lib/auth'
+import { rootActionClient } from '@/lib/safe-action'
 import { UnwrapPromise } from '@/types/UnwrapPromise'
-import { InferSelectModel, asc, count, desc, ilike } from 'drizzle-orm'
+import { asc } from 'drizzle-orm'
+import { z } from 'zod'
 
-type RoleType = InferSelectModel<typeof Role>
+export const getRolesAction2 = rootActionClient.schema(
+  z.object({
+    page: z.number(),
+    limit: z.number(),
+    sortBy: z.string().optional(),
+    sortOrder: z.string().optional(),
+    name: z.string().optional()
+  })
+)
 
-export const getRoles = async ({
+export const getRolesAction = async ({
   page,
   limit,
   sortBy,
@@ -24,35 +35,13 @@ export const getRoles = async ({
   const session = await authGuard(['Root'])
   if (!session) throw new Error('Unauthorized')
 
-  let countQ = db
-    .select({
-      count: count()
-    })
-    .from(Role)
-
-  if (name) countQ.where(ilike(Role.name, `%${name}%`))
-
-  const [roles, total] = await Promise.all([
-    db.query.Role.findMany({
-      columns: {
-        id: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true
-      },
-      where: name ? ilike(Role.name, `%${name}%`) : undefined,
-      orderBy: [
-        sortOrder === 'asc'
-          ? asc(Role[sortBy || 'createdAt'])
-          : desc(Role[sortBy || 'createdAt'])
-      ],
-      offset: (page - 1) * limit,
-      limit
-    }),
-    countQ
-  ])
-
-  return { roles, total: total[0]?.count || 0 }
+  return await getRoles({
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    search: name ? { name } : undefined
+  })
 }
 
 export type GetRolesFnDataType = UnwrapPromise<ReturnType<typeof getRoles>>

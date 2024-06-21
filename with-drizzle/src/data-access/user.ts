@@ -1,7 +1,9 @@
-import { eq } from 'drizzle-orm'
+import { InferSelectModel, eq } from 'drizzle-orm'
 
 import { db } from '@/db'
 import { User } from '@/db/schema'
+
+export type UserType = InferSelectModel<typeof User>
 
 type UpdateUserByIdInput = { name: string }
 

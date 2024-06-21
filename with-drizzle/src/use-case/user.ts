@@ -8,5 +8,7 @@ export const updateUserNameUseCase = async (
   id: string,
   data: UpdateUserNameUseCaseInput
 ) => {
-  await updateUserById(id, data)
+  await updateUserById(id, {
+    name: data.name
+  })
 }

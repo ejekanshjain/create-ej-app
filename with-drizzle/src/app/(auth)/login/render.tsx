@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { FC, HTMLAttributes, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Icons } from '@/components/icons'
@@ -12,7 +13,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/cn'
-import { toast } from 'sonner'
 
 const userAuthSchema = z.object({
   email: z.string().email()
@@ -20,12 +20,9 @@ const userAuthSchema = z.object({
 
 type FormData = z.infer<typeof userAuthSchema>
 
-interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {}
+interface RenderProps extends HTMLAttributes<HTMLDivElement> {}
 
-export const UserAuthForm: FC = ({
-  className,
-  ...props
-}: UserAuthFormProps) => {
+export const Render: FC = ({ className, ...props }: RenderProps) => {
   const {
     register,
     handleSubmit,

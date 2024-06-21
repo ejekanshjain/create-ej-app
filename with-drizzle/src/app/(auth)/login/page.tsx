@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
-import { UserAuthForm } from './user-auth-form'
+import { Render } from './render'
 
 const LoginPage = () => {
   return (
@@ -23,7 +23,7 @@ const LoginPage = () => {
             Enter your email to sign in to your account
           </p>
         </div>
-        <UserAuthForm />
+        <Render />
         <p className="px-8 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{' '}
           <Link

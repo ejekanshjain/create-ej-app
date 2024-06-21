@@ -6,7 +6,8 @@ import { MainNav } from '@/components/main-nav'
 import { SideNav } from '@/components/side-nav'
 import { SiteFooter } from '@/components/site-footer'
 import { UserAccountNav } from '@/components/user-account-nav'
-import { checkForPermission, getAuthSession } from '@/lib/auth'
+import { getAuthSession } from '@/lib/auth'
+import { checkForRolePermissionUseCase } from '@/use-case/role-permission'
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   const session = await getAuthSession()
@@ -14,7 +15,13 @@ const Layout = async ({ children }: { children: ReactNode }) => {
   if (!session?.user) return notFound()
 
   const isRoot = session.user.type === 'Root'
-  const [isTask] = await Promise.all([checkForPermission('TaskList', session)])
+  const [isTask] = await Promise.all([
+    checkForRolePermissionUseCase(
+      session.user.type,
+      session.user.roleId,
+      'TaskList'
+    )
+  ])
 
   return (
     <div className="flex min-h-screen flex-col space-y-6">
