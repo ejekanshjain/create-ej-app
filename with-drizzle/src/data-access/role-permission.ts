@@ -1,5 +1,3 @@
-'use server'
-
 import { InferSelectModel, and, count, eq } from 'drizzle-orm'
 
 import { db } from '@/db'

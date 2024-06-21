@@ -1,67 +1,34 @@
 'use server'
 
-import { User, UserType } from '@prisma/client'
+import { z } from 'zod'
 
-import { authGuard } from '@/lib/auth'
-import { prisma } from '@/lib/db'
-import { UnwrapPromise } from '@/types/UnwrapPromise'
+import { User } from '@/db/schema'
+import { authActionClient } from '@/lib/safe-action'
+import { SortOrderEnum } from '@/lib/sortOrderEnum'
+import { getUsersUseCase } from '@/use-case/user'
 
-export const getUsers = async ({
-  page,
-  limit,
-  sortBy,
-  sortOrder,
-  name,
-  email,
-  type
-}: {
-  page: number
-  limit: number
-  sortBy?: keyof User
-  sortOrder?: 'asc' | 'desc'
-  name?: string
-  email?: string
-  type?: UserType[]
-}) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  const where = {
-    name: name ? { contains: name, mode: 'insensitive' as const } : undefined,
-    email: email
-      ? { contains: email, mode: 'insensitive' as const }
-      : undefined,
-    type: type?.length ? { in: type } : undefined
-  }
-  const [users, total] = await Promise.all([
-    prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        type: true,
-        role: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        createdAt: true,
-        updatedAt: true
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: {
-        [sortBy || 'createdAt']: sortOrder || 'desc'
-      }
-    }),
-    prisma.user.count({
-      where
+export const getUsersAction = authActionClient
+  .schema(
+    z.object({
+      page: z.number().min(1),
+      limit: z.number().min(1).max(1000),
+      sortBy: z.enum(['name']).optional(),
+      sortOrder: z.enum(SortOrderEnum).optional(),
+      name: z.string().optional(),
+      email: z.string().optional(),
+      type: z.array(z.enum(User.type.enumValues)).optional()
     })
-  ])
-
-  return { users, total }
-}
-
-export type GetUsersFnDataType = UnwrapPromise<ReturnType<typeof getUsers>>
+  )
+  .action(async ({ ctx, parsedInput }) => {
+    return await getUsersUseCase(ctx.user.type, {
+      page: parsedInput.page,
+      limit: parsedInput.limit,
+      sortBy: parsedInput.sortBy,
+      sortOrder: parsedInput.sortOrder,
+      filters: {
+        name: parsedInput.name,
+        email: parsedInput.email,
+        type: parsedInput.type
+      }
+    })
+  })

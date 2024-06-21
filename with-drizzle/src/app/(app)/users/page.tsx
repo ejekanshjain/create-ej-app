@@ -1,10 +1,9 @@
-import { User, UserType } from '@prisma/client'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { authGuard } from '@/lib/auth'
+import { authGuard, getAuthSession } from '@/lib/auth'
 import { siteConfig } from '@/lib/siteConfig'
-import { getUsers } from './actions'
+import { getUsersAction } from './actions'
 import { Render } from './render'
 
 export const metadata: Metadata = {
@@ -23,18 +22,18 @@ const Users = async ({
     type?: string
   }
 }) => {
-  const session = await authGuard(['Root'])
+  const session = await getAuthSession()
   if (!session) return notFound()
+
+  const g = await authGuard(session)
+  if (!g) return notFound()
 
   const page = searchParams.page ? parseInt(searchParams.page) : 1
   const limit = searchParams.limit ? parseInt(searchParams.limit) : 10
 
   const [sortBy, sortOrder] =
     typeof searchParams.sort === 'string'
-      ? (searchParams.sort.split('.') as [
-          keyof User | undefined,
-          'asc' | 'desc' | undefined
-        ])
+      ? (searchParams.sort.split('.') as [any, 'asc' | 'desc' | undefined])
       : []
 
   const name = searchParams.name
@@ -42,10 +41,10 @@ const Users = async ({
 
   const type =
     typeof searchParams.type === 'string'
-      ? (searchParams.type.split('.') as UserType[])
+      ? (searchParams.type.split('.') as any[])
       : undefined
 
-  const data = await getUsers({
+  const data = await getUsersAction({
     page,
     limit,
     sortBy,
@@ -55,7 +54,9 @@ const Users = async ({
     type
   })
 
-  return <Render data={data} />
+  if (!data?.data) throw new Error('Users data not found')
+
+  return <Render data={data.data} />
 }
 
 export default Users

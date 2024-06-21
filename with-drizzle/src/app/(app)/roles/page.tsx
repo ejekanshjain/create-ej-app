@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { type RoleType } from '@/data-access/role'
 import { authGuard, getAuthSession } from '@/lib/auth'
 import { siteConfig } from '@/lib/siteConfig'
 import { getRolesAction } from './actions'
@@ -32,10 +31,7 @@ const RolesPage = async ({
 
   const [sortBy, sortOrder] =
     typeof searchParams.sort === 'string'
-      ? (searchParams.sort.split('.') as [
-          keyof RoleType | undefined,
-          'asc' | 'desc' | undefined
-        ])
+      ? (searchParams.sort.split('.') as [any, 'asc' | 'desc' | undefined])
       : []
 
   const name = searchParams.name
@@ -48,7 +44,7 @@ const RolesPage = async ({
     name
   })
 
-  if (!data?.data) throw new Error('Roles Data not found')
+  if (!data?.data) throw new Error('Roles data not found')
 
   return <Render data={data.data} />
 }

@@ -1,5 +1,3 @@
-'use server'
-
 import {
   createRole,
   deleteRole,
@@ -15,28 +13,33 @@ import {
   deleteRolePermissionsByRoleId
 } from '@/data-access/role-permission'
 import { type UserType } from '@/data-access/user'
+import { type SortOrderEnum } from '@/lib/sortOrderEnum'
 
-type getRolesInput = {
+type getRolesUseCaseInput = {
   page: number
   limit: number
   sortBy?: keyof RoleType
-  sortOrder?: 'asc' | 'desc'
-  search?: {
+  sortOrder?: SortOrderEnum
+  filters?: {
     name?: string
   }
 }
 
 export const getRolesUseCase = async (
   currentUserType: UserType['type'],
-  { page, limit, sortBy, sortOrder, search }: getRolesInput
+  { page, limit, sortBy, sortOrder, filters }: getRolesUseCaseInput
 ) => {
   if (currentUserType !== 'Root') throw new Error('Unauthorized')
+
+  if (limit < 1 || limit > 1000) throw new Error('Invalid limit')
+  if (page < 1) throw new Error('Invalid page')
+
   return await getRoles({
     page,
     limit,
     sortBy,
     sortOrder,
-    search
+    filters
   })
 }
 

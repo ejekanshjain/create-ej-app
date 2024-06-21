@@ -1,9 +1,8 @@
-'use server'
-
 import { InferSelectModel, asc, count, desc, eq, ilike, sql } from 'drizzle-orm'
 
 import { db } from '@/db'
 import { Role } from '@/db/schema'
+import { type SortOrderEnum } from '@/lib/sortOrderEnum'
 
 export type RoleType = InferSelectModel<typeof Role>
 
@@ -11,8 +10,8 @@ type getRolesInput = {
   page: number
   limit: number
   sortBy?: keyof RoleType
-  sortOrder?: 'asc' | 'desc'
-  search?: {
+  sortOrder?: SortOrderEnum
+  filters?: {
     name?: string
   }
 }
@@ -22,15 +21,11 @@ export const getRoles = async ({
   limit,
   sortBy,
   sortOrder,
-  search
+  filters
 }: getRolesInput) => {
-  let countQ = db
-    .select({
-      count: count()
-    })
-    .from(Role)
-
-  if (search?.name) countQ.where(ilike(Role.name, `%${search.name}%`))
+  const where = filters?.name
+    ? ilike(Role.name, `%${filters.name}%`)
+    : undefined
 
   const [roles, total] = await Promise.all([
     db.query.Role.findMany({
@@ -40,7 +35,7 @@ export const getRoles = async ({
         createdAt: true,
         updatedAt: true
       },
-      where: search?.name ? ilike(Role.name, `%${search?.name}%`) : undefined,
+      where,
       orderBy: [
         sortOrder === 'asc'
           ? asc(Role[sortBy || 'createdAt'])
@@ -49,7 +44,12 @@ export const getRoles = async ({
       offset: (page - 1) * limit,
       limit
     }),
-    countQ
+    db
+      .select({
+        count: count()
+      })
+      .from(Role)
+      .where(where)
   ])
 
   return { roles, total: total[0]?.count || 0 }

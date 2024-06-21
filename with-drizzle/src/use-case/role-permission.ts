@@ -1,5 +1,3 @@
-'use server'
-
 import {
   checkForRolePermission,
   type RolePermissionType

@@ -1,6 +1,5 @@
 'use client'
 
-import { UserType } from '@prisma/client'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -10,17 +9,24 @@ import { Heading } from '@/components/heading'
 import { Icons } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Button } from '@/components/ui/button'
+import { User } from '@/db/schema'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
-import { GetUsersFnDataType } from './actions'
 
-const types = Object.values(UserType).map(x => ({
+const types = User.type.enumValues.map(x => ({
   label: generateLabel(x),
   value: x
 }))
 
 export const Render: FC<{
-  data: GetUsersFnDataType
+  data: {
+    users: {
+      id: string
+      name?: string | null
+      email: string
+    }[]
+    total: number
+  }
 }> = ({ data }) => {
   return (
     <Shell>
