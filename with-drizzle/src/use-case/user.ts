@@ -1,3 +1,5 @@
+'use server'
+
 import { updateUserById } from '@/data-access/user'
 
 type UpdateUserNameUseCaseInput = {

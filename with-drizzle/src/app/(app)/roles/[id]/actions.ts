@@ -1,100 +1,59 @@
 'use server'
 
-import { Permissions } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
-import { authGuard } from '@/lib/auth'
-import { prisma } from '@/lib/db'
-import { UnwrapPromise } from '@/types/UnwrapPromise'
+import { authActionClient } from '@/lib/safe-action'
+import {
+  createRoleUseCase,
+  deleteRoleUseCase,
+  getRoleWithPermissionsUseCase,
+  updateRoleUseCase
+} from '@/use-case/role'
+import { RoleCreateUpdateSchema, RoleUpdateServerSchema } from './validation'
 
-export const getRole = async (id: string) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  return await prisma.role.findUnique({
-    where: {
-      id
-    },
-    include: {
-      permissions: true
-    }
-  })
-}
-
-export type GetRoleFnDataType = UnwrapPromise<ReturnType<typeof getRole>>
-
-export const createRole = async ({
-  name,
-  permissions
-}: {
-  name: string
-  permissions: Permissions[]
-}) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  const { id } = await prisma.role.create({
-    data: {
-      name,
-      permissions: {
-        createMany: {
-          data: permissions.map(permission => ({
-            permission
-          }))
-        }
-      }
-    }
+export const getRoleAction = authActionClient
+  .schema(z.string())
+  .action(async ({ parsedInput: id, ctx }) => {
+    return await getRoleWithPermissionsUseCase(ctx.user.type, id)
   })
 
-  revalidatePath('/roles')
-  revalidatePath(`/roles/${id}`)
+export const createRoleAction = authActionClient
+  .schema(RoleCreateUpdateSchema)
+  .action(async ({ parsedInput: { name, permissions }, ctx }) => {
+    const id = await createRoleUseCase(ctx.user.type, { name, permissions })
 
-  return id
-}
+    revalidatePath('/roles')
+    revalidatePath(`/roles/${id}`)
 
-export const updateRole = async ({
-  id,
-  name,
-  permissions
-}: {
-  id: string
-  name: string
-  permissions: Permissions[]
-}) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  await prisma.role.update({
-    where: {
-      id
-    },
-    data: {
-      name
-    }
-  })
-  await prisma.rolePermission.deleteMany({
-    where: {
-      roleId: id
-    }
-  })
-  await prisma.rolePermission.createMany({
-    data: permissions.map(permission => ({ permission, roleId: id }))
-  })
-
-  revalidatePath('/roles')
-  revalidatePath(`/roles/${id}`)
-}
-
-export const deleteRole = async (id: string) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  await prisma.role.delete({
-    where: {
+    return {
+      success: true,
       id
     }
   })
 
-  revalidatePath('/roles')
-  revalidatePath(`/roles/${id}`)
-}
+export const updateRoleAction = authActionClient
+  .schema(RoleUpdateServerSchema)
+  .action(async ({ parsedInput: { id, name, permissions }, ctx }) => {
+    await updateRoleUseCase(ctx.user.type, { id, name, permissions })
+
+    revalidatePath('/roles')
+    revalidatePath(`/roles/${id}`)
+
+    return {
+      success: true
+    }
+  })
+
+export const deleteRoleAction = authActionClient
+  .schema(z.string())
+  .action(async ({ parsedInput: id, ctx }) => {
+    await deleteRoleUseCase(ctx.user.type, id)
+
+    revalidatePath('/roles')
+    revalidatePath(`/roles/${id}`)
+
+    return {
+      success: true
+    }
+  })

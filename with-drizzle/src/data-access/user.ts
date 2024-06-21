@@ -1,3 +1,5 @@
+'use server'
+
 import { InferSelectModel, eq } from 'drizzle-orm'
 
 import { db } from '@/db'

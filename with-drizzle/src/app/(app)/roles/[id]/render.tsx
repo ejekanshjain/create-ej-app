@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Heading } from '@/components/heading'
@@ -33,39 +34,32 @@ import {
   FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { type RolePermissionType } from '@/data-access/role-permission'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
-import { generateLabel } from '@/lib/generateLabel'
-import { toast } from 'sonner'
-import {
-  GetRoleFnDataType,
-  createRole,
-  deleteRole,
-  updateRole
-} from './actions'
+import { createRoleAction, deleteRoleAction, updateRoleAction } from './actions'
+import { RoleCreateUpdateSchema, defaultPermissions } from './validation'
 
-const RoleSchema = z.object({
-  name: z.string().min(1),
-  permissions: z.array(z.string())
-})
-
-type FormData = z.infer<typeof RoleSchema>
-
-const permissions = Object.values(Permissions).map(x => ({
-  label: generateLabel(x),
-  value: x
-}))
+type FormData = z.infer<typeof RoleCreateUpdateSchema>
 
 export const Render: FC<{
-  role: GetRoleFnDataType | undefined
+  role?: {
+    id: string
+    name: string
+    permissions: RolePermissionType['permission'][]
+    createdAt: Date
+    updatedAt?: Date | null
+  } | null
 }> = ({ role }) => {
   const form = useForm<FormData>({
-    resolver: zodResolver(RoleSchema),
+    resolver: zodResolver(RoleCreateUpdateSchema),
     defaultValues: {
       name: role?.name ?? '',
-      permissions: role?.permissions.map(p => p.permission) ?? []
+      permissions: role?.permissions ?? []
     }
   })
+
   const router = useRouter()
+
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -73,17 +67,24 @@ export const Render: FC<{
     setIsSaving(true)
     try {
       if (!role) {
-        const newId = await createRole(data)
-        router.replace(`/roles/${newId}`)
+        const res = await createRoleAction(data)
+        if (!res?.data?.success)
+          throw new Error(res?.serverError || 'No success returned from server')
+        if (!res?.data?.id) throw new Error('No id returned from server')
+        router.replace(`/roles/${res.data.id}`)
       } else {
-        await updateRole({
+        const res = await updateRoleAction({
           id: role.id,
           ...data
         })
+        if (!res?.data?.success)
+          throw new Error(res?.serverError || 'No success returned from server')
       }
       toast('Role saved')
     } catch (err) {
-      toast('Error saving role')
+      toast('Error saving role', {
+        description: (err as any).message || undefined
+      })
     }
     setIsSaving(false)
   }
@@ -140,9 +141,14 @@ export const Render: FC<{
                       onClick={async () => {
                         setIsDeleting(true)
                         try {
-                          await deleteRole(role.id)
+                          const res = await deleteRoleAction(role.id)
+                          if (!res?.data?.success)
+                            throw new Error(
+                              res?.serverError ||
+                                'No success returned from server'
+                            )
                           toast('Role deleted')
-                          router.push('/roles')
+                          router.replace('/roles')
                         } catch (err) {
                           toast('Error deleting role')
                         }
@@ -197,7 +203,7 @@ export const Render: FC<{
             render={() => (
               <FormItem>
                 <FormLabel className="text-base">Permissions</FormLabel>
-                {permissions.map(item => (
+                {defaultPermissions.map(item => (
                   <FormField
                     key={item.value}
                     control={form.control}
@@ -245,7 +251,7 @@ export const Render: FC<{
             },
             {
               label: 'Updated At',
-              value: timesAgo(role.updatedAt)
+              value: role.updatedAt ? timesAgo(role.updatedAt) : '-'
             }
           ]}
         />

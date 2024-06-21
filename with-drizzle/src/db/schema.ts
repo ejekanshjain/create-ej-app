@@ -121,7 +121,9 @@ export const RolePermission = pgTable(
       .$defaultFn(() => createId()),
     roleId: text('roleId')
       .notNull()
-      .references(() => Role.id),
+      .references(() => Role.id, {
+        onDelete: 'cascade'
+      }),
     permission: PermissionEnum('permission').notNull()
   },
   rp => ({

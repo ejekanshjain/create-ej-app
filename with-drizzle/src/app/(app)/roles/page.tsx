@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { RoleType } from '@/data-access/role'
+import { type RoleType } from '@/data-access/role'
 import { authGuard, getAuthSession } from '@/lib/auth'
 import { siteConfig } from '@/lib/siteConfig'
 import { getRolesAction } from './actions'
@@ -25,7 +25,6 @@ const RolesPage = async ({
   if (!session) return notFound()
 
   const g = await authGuard(session)
-
   if (!g) return notFound()
 
   const page = searchParams.page ? parseInt(searchParams.page) : 1

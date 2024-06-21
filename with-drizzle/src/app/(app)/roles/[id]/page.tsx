@@ -1,9 +1,9 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { authGuard } from '@/lib/auth'
+import { authGuard, getAuthSession } from '@/lib/auth'
 import { siteConfig } from '@/lib/siteConfig'
-import { GetRoleFnDataType, getRole } from './actions'
+import { getRoleAction } from './actions'
 import { Render } from './render'
 
 export const generateMetadata = async (props: {
@@ -19,18 +19,29 @@ const RolePage = async ({
     id: string
   }
 }) => {
-  const session = await authGuard(['Root'])
+  const session = await getAuthSession()
   if (!session) return notFound()
 
-  let role: GetRoleFnDataType | undefined
+  const g = await authGuard(session)
+  if (!g) return notFound()
 
-  if (id !== 'new') {
-    const x = await getRole(id)
-    if (!x) return notFound()
-    role = x
-  }
+  if (id == 'new') return <Render />
 
-  return <Render role={role} />
+  const role = await getRoleAction(id)
+
+  if (!role?.data) return notFound()
+
+  return (
+    <Render
+      role={{
+        id: role.data.id,
+        name: role.data.name,
+        permissions: role.data.permissions.map(p => p.permission),
+        createdAt: role.data.createdAt,
+        updatedAt: role.data.updatedAt
+      }}
+    />
+  )
 }
 
 export default RolePage
