@@ -1,11 +1,10 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { Role } from '@/db/schema'
-import { authGuard } from '@/lib/auth'
+import { RoleType } from '@/data-access/role'
+import { authGuard, getAuthSession } from '@/lib/auth'
 import { siteConfig } from '@/lib/siteConfig'
-import { InferSelectModel } from 'drizzle-orm'
-import { getRoles } from './actions'
+import { getRolesAction } from './actions'
 import { Render } from './render'
 
 export const metadata: Metadata = {
@@ -22,8 +21,12 @@ const RolesPage = async ({
     name?: string
   }
 }) => {
-  const session = await authGuard(['Root'])
+  const session = await getAuthSession()
   if (!session) return notFound()
+
+  const g = await authGuard(session)
+
+  if (g) return notFound()
 
   const page = searchParams.page ? parseInt(searchParams.page) : 1
   const limit = searchParams.limit ? parseInt(searchParams.limit) : 10
@@ -31,14 +34,14 @@ const RolesPage = async ({
   const [sortBy, sortOrder] =
     typeof searchParams.sort === 'string'
       ? (searchParams.sort.split('.') as [
-          keyof InferSelectModel<typeof Role> | undefined,
+          keyof RoleType | undefined,
           'asc' | 'desc' | undefined
         ])
       : []
 
   const name = searchParams.name
 
-  const data = await getRoles({
+  const data = await getRolesAction({
     page,
     limit,
     sortBy,
@@ -46,7 +49,9 @@ const RolesPage = async ({
     name
   })
 
-  return <Render data={data} />
+  if (!data?.data) throw new Error('Roles Data not found')
+
+  return <Render data={data.data} />
 }
 
 export default RolesPage

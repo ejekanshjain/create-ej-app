@@ -12,10 +12,10 @@ type getRolesInput = {
 }
 
 export const getRolesUseCase = async (
-  userType: UserType['type'],
+  currentUserType: UserType['type'],
   { page, limit, sortBy, sortOrder, search }: getRolesInput
 ) => {
-  if (userType !== 'Root') throw new Error('Unauthorized')
+  if (currentUserType !== 'Root') throw new Error('Unauthorized')
   return await getRoles({
     page,
     limit,
@@ -25,7 +25,9 @@ export const getRolesUseCase = async (
   })
 }
 
-export const getRolesMiniUseCase = async (userType: UserType['type']) => {
-  if (userType !== 'Root') throw new Error('Unauthorized')
+export const getRolesMiniUseCase = async (
+  currentUserType: UserType['type']
+) => {
+  if (currentUserType !== 'Root') throw new Error('Unauthorized')
   return await getRolesMini()
 }

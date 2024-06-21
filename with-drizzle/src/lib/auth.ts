@@ -80,11 +80,10 @@ export const authOptions: NextAuthOptions = {
 export const getAuthSession = cache(() => getServerSession(authOptions))
 
 export const authGuard = cache(
-  () =>
-    (session: NextAuthSession, permission?: RolePermissionType['permission']) =>
-      checkForRolePermissionUseCase(
-        session.user.type,
-        session.user.roleId,
-        permission
-      )
+  (session: NextAuthSession, permission?: RolePermissionType['permission']) =>
+    checkForRolePermissionUseCase(
+      session.user.type,
+      session.user.roleId,
+      permission
+    )
 )

@@ -10,10 +10,17 @@ import { Icons } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Button } from '@/components/ui/button'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
-import { GetRolesFnDataType } from './actions'
 
 export const Render: FC<{
-  data: GetRolesFnDataType
+  data: {
+    roles: {
+      id: string
+      name: string
+      createdAt: Date
+      updatedAt?: Date | null
+    }[]
+    total: number
+  }
 }> = ({ data }) => {
   return (
     <Shell>
