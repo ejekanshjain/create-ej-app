@@ -3,9 +3,10 @@
 import EditorJS from '@editorjs/editorjs'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { InferSelectModel } from 'drizzle-orm'
+import edjsHTML from 'editorjs-html'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -54,6 +55,8 @@ const statuses = TaskStatusEnumArr.map(x => ({
   label: generateLabel(x),
   value: x
 }))
+
+const edjsParser = edjsHTML()
 
 export const Render: FC<{
   task?: {
@@ -191,6 +194,12 @@ export const Render: FC<{
       editorRef.current = undefined
     }
   }, [isEditorMounted, initializeEditor])
+
+  const editorHTML = useMemo(() => {
+    if (!task?.description) return ''
+    return edjsParser.parse(JSON.parse(task.description)).join('')
+  }, [task?.description])
+  console.log(editorHTML)
 
   async function onSubmit(data: FormData) {
     setIsSaving(true)
