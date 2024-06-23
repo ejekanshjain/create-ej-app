@@ -59,7 +59,8 @@ const Layout = async ({ children }: { children: ReactNode }) => {
           <div className="flex items-center justify-center space-x-4">
             <AppNavCommand
               modules={{
-                task: true
+                task: true,
+                root: session.user.type === 'Root'
               }}
             />
             <UserAccountNav

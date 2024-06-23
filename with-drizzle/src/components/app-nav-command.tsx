@@ -23,6 +23,7 @@ import {
 export const AppNavCommand: FC<{
   modules: {
     task: boolean
+    root: boolean
   }
 }> = ({ modules }) => {
   const [open, setOpen] = useState(false)
@@ -102,6 +103,22 @@ export const AppNavCommand: FC<{
                 </CommandItem>
               ) : undefined}
             </CommandGroup>
+            {modules.root ? (
+              <CommandGroup heading="Root Actions">
+                <CommandItem
+                  onSelect={() => runCommand(() => router.push('/users'))}
+                >
+                  <Icons.mixer className="mr-2 h-4 w-4" />
+                  Users
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => runCommand(() => router.push('/roles'))}
+                >
+                  <Icons.user className="mr-2 h-4 w-4" />
+                  Roles
+                </CommandItem>
+              </CommandGroup>
+            ) : undefined}
             <CommandGroup heading="Account">
               <CommandItem
                 onSelect={() => runCommand(() => router.push('/settings'))}
