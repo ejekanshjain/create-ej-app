@@ -35,7 +35,7 @@ program.action(async () => {
         {
           name: 'base',
           message:
-            'Base setup with ts, shadcn, auth, drizzle, user types, ACLs (roles & permissions)'
+            'Base setup with ts, shadcn, auth, drizzle, User Types and ACLs (roles & permissions)'
         },
         {
           name: 'prisma',
