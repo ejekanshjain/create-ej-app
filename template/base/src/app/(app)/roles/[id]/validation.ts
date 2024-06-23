@@ -6,7 +6,7 @@ import { generateLabel } from '@/lib/generateLabel'
 const RolePermissionsEnumArr = RolePermission.permission.enumValues
 
 export const RoleCreateUpdateSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).trim(),
   permissions: z.array(z.enum(RolePermissionsEnumArr))
 })
 

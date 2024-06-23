@@ -81,6 +81,8 @@ export const createUserUseCase = async (
 
   if (data.type === 'Root') data.roleId = null
 
+  data.email = data.email.trim().toLowerCase()
+
   return await createUser({
     name: data.name,
     email: data.email,
