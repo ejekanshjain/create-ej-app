@@ -94,20 +94,35 @@ export const Render: FC<{
   const initializeEditor = useCallback(async () => {
     const EditorJS = (await import('@editorjs/editorjs')).default
 
-    // // @ts-ignore
-    // const Table = (await import('@editorjs/table')).default
-    // // @ts-ignore
-    // const List = (await import('@editorjs/list')).default
+    // @ts-ignore
+    const Header = (await import('@editorjs/header')).default
+
+    // @ts-ignore
+    const List = (await import('@editorjs/list')).default
+
+    // @ts-ignore
+    const NestedList = (await import('@editorjs/nested-list')).default
+
+    // @ts-ignore
+    const CheckList = (await import('@editorjs/checklist')).default
+
+    // @ts-ignore
+    const Table = (await import('@editorjs/table')).default
+
+    // @ts-ignore
+    const Quote = (await import('@editorjs/quote')).default
+
+    // @ts-ignore
+    const Delimiter = (await import('@editorjs/delimiter')).default
+
+    // @ts-ignore
+    const InlineCode = (await import('@editorjs/inline-code')).default
+
+    // @ts-ignore
+    const Code = (await import('@editorjs/code')).default
+
     // // @ts-ignore
     // const Image = (await import('@editorjs/image')).default
-    // // @ts-ignore
-    // const Header = (await import('@editorjs/header')).default
-    // // @ts-ignore
-    // const Quote = (await import('@editorjs/quote')).default
-    // // @ts-ignore
-    // const CheckList = (await import('@editorjs/checklist')).default
-    // // @ts-ignore
-    // const Delimiter = (await import('@editorjs/delimiter')).default
 
     if (!editorRef.current) {
       const editor = new EditorJS({
@@ -117,44 +132,47 @@ export const Render: FC<{
         },
         placeholder: 'Type here to write...',
         inlineToolbar: true,
-        data: task?.description ? JSON.parse(task.description) : undefined
-        // tools: {
-        //   header: Header,
-        //   list: List,
-        //   image: {
-        //     class: Image,
-        //     config: {
-        //       uploader: {
-        //         async uploadByFile(file: any) {
-        //           const formData = new FormData()
-        //           formData.append('file', file)
-        //           const res = await fetch('/api/upload', {
-        //             method: 'POST',
-        //             body: formData
-        //           })
-        //           const json = await res.json()
-        //           if (json.success && json.id && json.url) {
-        //             return {
-        //               success: true,
-        //               file: {
-        //                 id: json.id,
-        //                 url: json.url
-        //               }
-        //             }
-        //           } else {
-        //             return {
-        //               success: false
-        //             }
-        //           }
-        //         }
-        //       }
-        //     }
-        //   },
-        //   table: Table,
-        //   checklist: CheckList,
-        //   quote: Quote,
-        //   delimiter: Delimiter
-        // }
+        data: task?.description ? JSON.parse(task.description) : undefined,
+        tools: {
+          header: Header,
+          list: List,
+          nestedList: NestedList,
+          checklist: CheckList,
+          table: Table,
+          quote: Quote,
+          delimiter: Delimiter,
+          inlineCode: InlineCode,
+          code: Code
+          // image: {
+          //   class: Image,
+          //   config: {
+          //     uploader: {
+          //       async uploadByFile(file: any) {
+          //         const formData = new FormData()
+          //         formData.append('file', file)
+          //         const res = await fetch('/api/upload', {
+          //           method: 'POST',
+          //           body: formData
+          //         })
+          //         const json = await res.json()
+          //         if (json.success && json.id && json.url) {
+          //           return {
+          //             success: true,
+          //             file: {
+          //               id: json.id,
+          //               url: json.url
+          //             }
+          //           }
+          //         } else {
+          //           return {
+          //             success: false
+          //           }
+          //         }
+          //       }
+          //     }
+          //   }
+          // }
+        }
       })
     }
   }, [task?.description])
