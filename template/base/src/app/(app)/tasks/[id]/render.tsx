@@ -1,10 +1,11 @@
 'use client'
 
+import EditorJS from '@editorjs/editorjs'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { InferSelectModel } from 'drizzle-orm'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FC, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -79,19 +80,109 @@ export const Render: FC<{
     resolver: zodResolver(TaskCreateUpdateSchema),
     defaultValues: {
       title: task?.title || '',
-      description: task?.description,
       status: task?.status
     }
   })
   const router = useRouter()
+
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isEditorMounted, setIsMounted] = useState<boolean>(false)
+
+  const editorRef = useRef<EditorJS>()
+
+  const initializeEditor = useCallback(async () => {
+    const EditorJS = (await import('@editorjs/editorjs')).default
+
+    // // @ts-ignore
+    // const Table = (await import('@editorjs/table')).default
+    // // @ts-ignore
+    // const List = (await import('@editorjs/list')).default
+    // // @ts-ignore
+    // const Image = (await import('@editorjs/image')).default
+    // // @ts-ignore
+    // const Header = (await import('@editorjs/header')).default
+    // // @ts-ignore
+    // const Quote = (await import('@editorjs/quote')).default
+    // // @ts-ignore
+    // const CheckList = (await import('@editorjs/checklist')).default
+    // // @ts-ignore
+    // const Delimiter = (await import('@editorjs/delimiter')).default
+
+    if (!editorRef.current) {
+      const editor = new EditorJS({
+        holder: 'editor',
+        onReady() {
+          editorRef.current = editor
+        },
+        placeholder: 'Type here to write...',
+        inlineToolbar: true,
+        data: task?.description ? JSON.parse(task.description) : undefined
+        // tools: {
+        //   header: Header,
+        //   list: List,
+        //   image: {
+        //     class: Image,
+        //     config: {
+        //       uploader: {
+        //         async uploadByFile(file: any) {
+        //           const formData = new FormData()
+        //           formData.append('file', file)
+        //           const res = await fetch('/api/upload', {
+        //             method: 'POST',
+        //             body: formData
+        //           })
+        //           const json = await res.json()
+        //           if (json.success && json.id && json.url) {
+        //             return {
+        //               success: true,
+        //               file: {
+        //                 id: json.id,
+        //                 url: json.url
+        //               }
+        //             }
+        //           } else {
+        //             return {
+        //               success: false
+        //             }
+        //           }
+        //         }
+        //       }
+        //     }
+        //   },
+        //   table: Table,
+        //   checklist: CheckList,
+        //   quote: Quote,
+        //   delimiter: Delimiter
+        // }
+      })
+    }
+  }, [task?.description])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isEditorMounted) return
+
+    initializeEditor()
+
+    return () => {
+      editorRef.current?.destroy()
+      editorRef.current = undefined
+    }
+  }, [isEditorMounted, initializeEditor])
 
   async function onSubmit(data: FormData) {
     setIsSaving(true)
     try {
+      const editorData = await editorRef.current?.save()
       if (!task) {
-        const res = await createTaskAction(data)
+        const res = await createTaskAction({
+          ...data,
+          description: editorData ? JSON.stringify(editorData) : null
+        })
         if (!res?.data?.success)
           throw new Error(res?.serverError || 'No success returned from server')
         if (!res?.data?.id) throw new Error('No id returned from server')
@@ -99,7 +190,8 @@ export const Render: FC<{
       } else {
         const res = await updateTaskAction({
           id: task.id,
-          ...data
+          ...data,
+          description: editorData ? JSON.stringify(editorData) : null
         })
         if (!res?.data?.success)
           throw new Error(res?.serverError || 'No success returned from server')
@@ -252,6 +344,22 @@ export const Render: FC<{
               </FormItem>
             )}
           />
+
+          {isEditorMounted ? (
+            <div className="col-span-1 md:col-span-2 w-full mt-5 prose prose-neutral mx-auto dark:prose-invert">
+              <h3 className="w-full bg-transparent text-3xl font-bold">
+                Description
+              </h3>
+              <div id="editor" className="min-h-[360px] w-full" />
+              <p className="text-sm text-gray-500">
+                Use{' '}
+                <kbd className="rounded-md border bg-muted px-1 text-xs uppercase">
+                  Tab
+                </kbd>{' '}
+                to open the command menu.
+              </p>
+            </div>
+          ) : undefined}
         </form>
       </Form>
       {task ? (
