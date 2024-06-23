@@ -21,22 +21,19 @@ export const getTasksAction = authActionClient
     })
   )
   .action(async ({ parsedInput, ctx }) => {
-    return await getTasksWithUserUseCase(
-      { userType: ctx.user.type, roleId: ctx.user.roleId },
-      {
-        page: parsedInput.page,
-        limit: parsedInput.limit,
-        sortBy: parsedInput.sortBy,
-        sortOrder: parsedInput.sortOrder,
-        filters:
-          parsedInput.title || parsedInput.status?.length
-            ? {
-                title: parsedInput.title || undefined,
-                status: parsedInput.status?.length
-                  ? parsedInput.status
-                  : undefined
-              }
-            : undefined
-      }
-    )
+    return await getTasksWithUserUseCase(ctx.user, {
+      page: parsedInput.page,
+      limit: parsedInput.limit,
+      sortBy: parsedInput.sortBy,
+      sortOrder: parsedInput.sortOrder,
+      filters:
+        parsedInput.title || parsedInput.status?.length
+          ? {
+              title: parsedInput.title || undefined,
+              status: parsedInput.status?.length
+                ? parsedInput.status
+                : undefined
+            }
+          : undefined
+    })
   })

@@ -1,5 +1,12 @@
-import { TaskType, getTasksWithUser } from '@/data-access/task'
-import { UserType } from '@/data-access/user'
+import {
+  TaskType,
+  createTask,
+  deleteTask,
+  getTaskByIdWithUser,
+  getTasksWithUser,
+  updateTask
+} from '@/data-access/task'
+import { CurrentUser } from '@/lib/currentUser'
 import { type SortOrderEnum } from '@/lib/sortOrderEnum'
 import { checkForRolePermissionUseCase } from './role-permission'
 
@@ -15,14 +22,11 @@ type getUsersUseCaseInput = {
 }
 
 export const getTasksWithUserUseCase = async (
-  currentUser: {
-    userType: UserType['type']
-    roleId?: string | null
-  },
+  currentUser: CurrentUser,
   { page, limit, sortBy, sortOrder, filters }: getUsersUseCaseInput
 ) => {
   const c = await checkForRolePermissionUseCase(
-    currentUser.userType,
+    currentUser.type,
     currentUser.roleId,
     'TaskList'
   )
@@ -43,4 +47,84 @@ export const getTasksWithUserUseCase = async (
         }
       : undefined
   })
+}
+
+export const getTaskByIdWithUserUseCase = async (
+  currentUser: CurrentUser,
+  id: string
+) => {
+  const c = await checkForRolePermissionUseCase(
+    currentUser.type,
+    currentUser.roleId,
+    'TaskView'
+  )
+  if (!c) throw new Error('Unauthorized')
+
+  return await getTaskByIdWithUser(id)
+}
+
+type createTaskUseCaseInput = {
+  title: string
+  description?: string | null
+  status: TaskType['status']
+}
+
+export const createTaskUseCase = async (
+  currentUser: CurrentUser,
+  data: createTaskUseCaseInput
+) => {
+  const c = await checkForRolePermissionUseCase(
+    currentUser.type,
+    currentUser.roleId,
+    'TaskCreate'
+  )
+  if (!c) throw new Error('Unauthorized')
+
+  return await createTask({
+    title: data.title,
+    description: data.description,
+    status: data.status,
+    createdById: currentUser.id
+  })
+}
+
+type updateTaskUseCaseInput = {
+  id: string
+  title?: string
+  description?: string | null
+  status?: TaskType['status']
+}
+
+export const updateTaskUseCase = async (
+  currentUser: CurrentUser,
+  data: updateTaskUseCaseInput
+) => {
+  const c = await checkForRolePermissionUseCase(
+    currentUser.type,
+    currentUser.roleId,
+    'TaskUpdate'
+  )
+  if (!c) throw new Error('Unauthorized')
+
+  return await updateTask({
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    status: data.status,
+    updatedById: currentUser.id
+  })
+}
+
+export const deleteTaskUseCase = async (
+  currentUser: CurrentUser,
+  id: string
+) => {
+  const c = await checkForRolePermissionUseCase(
+    currentUser.type,
+    currentUser.roleId,
+    'TaskDelete'
+  )
+  if (!c) throw new Error('Unauthorized')
+
+  return await deleteTask(id)
 }
