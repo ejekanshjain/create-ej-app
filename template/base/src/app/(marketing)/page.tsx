@@ -15,7 +15,8 @@ const links = [
   {
     href: 'https://orm.drizzle.team',
     title: 'Drizzle',
-    description: 'Drizzle is a next-generation ORM for Node.js and TypeScript.'
+    description:
+      'Lightweight and performant TypeScript ORM with developer experience in mind.'
   },
   {
     href: 'https://next-auth.js.org',
