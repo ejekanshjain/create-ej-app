@@ -24,7 +24,7 @@ type getUsersInput = {
   }
 }
 
-export const getUsers = async ({
+export const getUsersWithRole = async ({
   page,
   limit,
   sortBy,
@@ -42,8 +42,16 @@ export const getUsers = async ({
       columns: {
         id: true,
         name: true,
+        email: true,
+        type: true,
+        roleId: true,
+        image: true,
+        emailVerified: true,
         createdAt: true,
         updatedAt: true
+      },
+      with: {
+        role: true
       },
       where,
       orderBy: [

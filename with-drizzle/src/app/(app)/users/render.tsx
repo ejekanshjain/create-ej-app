@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { User } from '@/db/schema'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
+import { InferSelectModel } from 'drizzle-orm'
 
 const types = User.type.enumValues.map(x => ({
   label: generateLabel(x),
@@ -24,6 +25,12 @@ export const Render: FC<{
       id: string
       name?: string | null
       email: string
+      type?: InferSelectModel<typeof User>['type']
+      role?: {
+        name: string
+      } | null
+      createdAt: Date
+      updatedAt?: Date | null
     }[]
     total: number
   }
@@ -86,7 +93,8 @@ export const Render: FC<{
             header: ({ column }) => (
               <DataTableColumnHeader column={column} title="Updated At" />
             ),
-            cell: ({ row }) => timesAgo(row.original.updatedAt)
+            cell: ({ row }) =>
+              row.original.updatedAt ? timesAgo(row.original.updatedAt) : '-'
           }
         ]}
         data={data.users}

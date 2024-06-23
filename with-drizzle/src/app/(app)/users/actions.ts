@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { User } from '@/db/schema'
 import { authActionClient } from '@/lib/safe-action'
 import { SortOrderEnum } from '@/lib/sortOrderEnum'
-import { getUsersUseCase } from '@/use-case/user'
+import { getUsersWithRoleUseCase } from '@/use-case/user'
 
 export const getUsersAction = authActionClient
   .schema(
@@ -20,7 +20,7 @@ export const getUsersAction = authActionClient
     })
   )
   .action(async ({ ctx, parsedInput }) => {
-    return await getUsersUseCase(ctx.user.type, {
+    return await getUsersWithRoleUseCase(ctx.user.type, {
       page: parsedInput.page,
       limit: parsedInput.limit,
       sortBy: parsedInput.sortBy,

@@ -1,4 +1,4 @@
-import { UserType, getUsers, updateUserById } from '@/data-access/user'
+import { UserType, getUsersWithRole, updateUserById } from '@/data-access/user'
 import { type SortOrderEnum } from '@/lib/sortOrderEnum'
 
 type UpdateUserNameUseCaseInput = {
@@ -26,7 +26,7 @@ type getUsersUseCaseInput = {
   }
 }
 
-export const getUsersUseCase = async (
+export const getUsersWithRoleUseCase = async (
   currentUserType: UserType['type'],
   { page, limit, sortBy, sortOrder, filters }: getUsersUseCaseInput
 ) => {
@@ -35,7 +35,7 @@ export const getUsersUseCase = async (
   if (limit < 1 || limit > 1000) throw new Error('Invalid limit')
   if (page < 1) throw new Error('Invalid page')
 
-  return await getUsers({
+  return await getUsersWithRole({
     page,
     limit,
     sortBy,
