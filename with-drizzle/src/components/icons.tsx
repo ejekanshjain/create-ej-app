@@ -26,6 +26,7 @@ import {
   Settings,
   Settings2,
   Sun,
+  Terminal,
   Trash,
   User,
   X
@@ -93,5 +94,6 @@ export const Icons = {
   chevronsLeft: ChevronsLeft,
   chevronsRight: ChevronsRight,
   chevronRight: ChevronRight,
-  mixer: Settings2
+  mixer: Settings2,
+  terminal: Terminal
 }
