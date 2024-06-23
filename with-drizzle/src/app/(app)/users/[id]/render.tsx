@@ -40,8 +40,10 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { User } from '@/db/schema'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
+import { InferSelectModel } from 'drizzle-orm'
 import { createUserAction, deleteUserAction, updateUserAction } from './actions'
 import { UserCreateUpdateSchema, UserTypeEnumArr } from './validation'
 
@@ -55,10 +57,10 @@ const types = UserTypeEnumArr.map(x => ({
 export const Render: FC<{
   user?: {
     id: string
-    name?: string
+    name?: string | null
     email: string
-    type: any
-    roleId?: string
+    type: InferSelectModel<typeof User>['type']
+    roleId?: string | null
     createdAt: Date
     updatedAt?: Date | null
   } | null

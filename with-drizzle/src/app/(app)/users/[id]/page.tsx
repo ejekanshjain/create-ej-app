@@ -1,10 +1,9 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { authGuard } from '@/lib/auth'
+import { authGuard, getAuthSession } from '@/lib/auth'
 import { siteConfig } from '@/lib/siteConfig'
-import { getRolesMini } from '../../roles/actions'
-import { GetUserFnDataType, getUser } from './actions'
+import { getRolesMiniAction, getUserAction } from './actions'
 import { Render } from './render'
 
 export const generateMetadata = async (props: {
@@ -20,20 +19,21 @@ const UserPage = async ({
     id: string
   }
 }) => {
-  const session = await authGuard(['Root'])
+  const session = await getAuthSession()
   if (!session) return notFound()
 
-  let user: GetUserFnDataType | undefined
+  const g = await authGuard(session)
+  if (!g) return notFound()
 
-  if (id !== 'new') {
-    const x = await getUser(id)
-    if (!x) return notFound()
-    user = x
-  }
+  const roles = await getRolesMiniAction()
+  if (!roles?.data) return notFound()
 
-  const roles = await getRolesMini()
+  if (id === 'new') return <Render roles={roles.data} />
 
-  return <Render user={user} roles={roles} />
+  const user = await getUserAction(id)
+  if (!user?.data) return notFound()
+
+  return <Render user={user.data} roles={roles.data} />
 }
 
 export default UserPage

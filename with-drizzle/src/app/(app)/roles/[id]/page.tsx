@@ -28,7 +28,6 @@ const RolePage = async ({
   if (id == 'new') return <Render />
 
   const role = await getRoleAction(id)
-
   if (!role?.data) return notFound()
 
   return (

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 import { authActionClient } from '@/lib/safe-action'
+import { getRolesMiniUseCase } from '@/use-case/role'
 import {
   createUserUseCase,
   deleteUserUseCase,
@@ -59,3 +60,7 @@ export const deleteUserAction = authActionClient
 
     return { success: true }
   })
+
+export const getRolesMiniAction = authActionClient.action(async ({ ctx }) => {
+  return await getRolesMiniUseCase(ctx.user.type)
+})
