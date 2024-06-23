@@ -10,8 +10,8 @@ import { getUsersWithRoleUseCase } from '@/use-case/user'
 export const getUsersAction = authActionClient
   .schema(
     z.object({
-      page: z.number().min(1),
-      limit: z.number().min(1).max(1000),
+      page: z.number().gte(1),
+      limit: z.number().gte(1).lte(1000),
       sortBy: z.enum(['name']).optional(),
       sortOrder: z.enum(SortOrderEnum).optional(),
       name: z.string().optional(),

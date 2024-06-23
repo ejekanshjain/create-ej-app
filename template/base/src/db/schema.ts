@@ -1,6 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import { relations, sql } from 'drizzle-orm'
 import {
+  boolean,
   index,
   integer,
   pgEnum,
@@ -194,7 +195,7 @@ export const VerificationToken = pgTable(
 export const TaskStatusEnum = pgEnum('TaskStatusEnum', [
   'Backlog',
   'Todo',
-  'In_Progress',
+  'In Progress',
   'Done',
   'Cancelled'
 ])
@@ -205,7 +206,7 @@ export const Task = pgTable('Tasks', {
     .primaryKey()
     .$defaultFn(() => createId()),
   title: varchar('title', { length: 255 }).notNull(),
-  status: TaskStatusEnum('status').notNull(),
+  status: TaskStatusEnum('status').notNull().default('Todo'),
   description: text('description'),
   createdAt: timestamp('createdAt', {
     mode: 'date',
@@ -243,9 +244,15 @@ export const Resource = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     filename: varchar('filename', { length: 255 }).notNull(),
+    path: varchar('path', { length: 255 }).notNull(),
     key: varchar('key', { length: 255 }).notNull().unique(),
+    size: integer('size').notNull(),
+    mimeType: varchar('mimeType', { length: 255 }).notNull(),
+    isTemp: boolean('isTemp').notNull().default(false),
     url: varchar('url', { length: 255 }).notNull().unique(),
+
     taskId: text('taskId').references(() => Task.id),
+
     createdAt: timestamp('createdAt', {
       mode: 'date',
       withTimezone: true
@@ -255,7 +262,9 @@ export const Resource = pgTable(
     updatedAt: timestamp('updatedAt', {
       mode: 'date',
       withTimezone: true
-    })
+    }),
+    createdById: text('createdById').references(() => User.id),
+    updatedById: text('updatedById').references(() => User.id)
   },
   resource => ({
     taskIdIdx: index('Resources_idx_taskId').on(resource.taskId)
@@ -266,5 +275,13 @@ export const ResourceRelations = relations(Resource, ({ one }) => ({
   task: one(Task, {
     fields: [Resource.taskId],
     references: [Task.id]
+  }),
+  createdBy: one(User, {
+    fields: [Resource.createdById],
+    references: [User.id]
+  }),
+  updatedBy: one(User, {
+    fields: [Resource.updatedById],
+    references: [User.id]
   })
 }))
