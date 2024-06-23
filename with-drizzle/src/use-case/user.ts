@@ -79,6 +79,8 @@ export const createUserUseCase = async (
 ) => {
   if (currentUserType !== 'Root') throw new Error('Unauthorized')
 
+  if (data.type === 'Root') data.roleId = null
+
   return await createUser({
     name: data.name,
     email: data.email,
