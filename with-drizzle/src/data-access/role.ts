@@ -55,7 +55,7 @@ export const getRoles = async ({
   return { roles, total: total[0]?.count || 0 }
 }
 
-export const getRoleWithPermissions = async (id: string) => {
+export const getRoleByIdWithPermissions = async (id: string) => {
   return await db.query.Role.findFirst({
     where: eq(Role.id, id),
     with: {

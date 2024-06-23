@@ -1,11 +1,11 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { UserType } from '@prisma/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Heading } from '@/components/heading'
@@ -40,41 +40,39 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { toast } from '@/components/ui/use-toast'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
-import { GetRolesMiniFnDataType } from '../../roles/actions'
-import {
-  GetUserFnDataType,
-  createUser,
-  deleteUser,
-  updateUser
-} from './actions'
+import { createUserAction, deleteUserAction, updateUserAction } from './actions'
+import { UserCreateUpdateSchema, UserTypeEnumArr } from './validation'
 
-const UserSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  type: z.nativeEnum(UserType),
-  roleId: z.string().optional().nullable()
-})
+type FormData = z.infer<typeof UserCreateUpdateSchema>
 
-type FormData = z.infer<typeof UserSchema>
-
-const types = Object.values(UserType).map(x => ({
+const types = UserTypeEnumArr.map(x => ({
   label: generateLabel(x),
   value: x
 }))
 
 export const Render: FC<{
-  user: GetUserFnDataType | undefined
-  roles: GetRolesMiniFnDataType
+  user?: {
+    id: string
+    name?: string
+    email: string
+    type: any
+    roleId?: string
+    createdAt: Date
+    updatedAt?: Date | null
+  } | null
+  roles: {
+    id: string
+    name: string
+  }[]
 }> = ({ user, roles }) => {
   const form = useForm<FormData>({
-    resolver: zodResolver(UserSchema),
+    resolver: zodResolver(UserCreateUpdateSchema),
     defaultValues: {
       name: user?.name ?? '',
       email: user?.email ?? '',
-      type: user?.type ?? UserType.Normal,
+      type: user?.type ?? 'Normal',
       roleId: user?.roleId
     }
   })
@@ -86,21 +84,23 @@ export const Render: FC<{
     setIsSaving(true)
     try {
       if (!user) {
-        const newId = await createUser(data)
-        router.replace(`/users/${newId}`)
+        const res = await createUserAction(data)
+        if (!res?.data?.success)
+          throw new Error(res?.serverError || 'No success returned from server')
+        if (!res?.data?.id) throw new Error('No id returned from server')
+        router.replace(`/users/${res.data.id}`)
       } else {
-        await updateUser({
+        const res = await updateUserAction({
           id: user.id,
           ...data
         })
+        if (!res?.data?.success)
+          throw new Error(res?.serverError || 'No success returned from server')
       }
-      toast({
-        title: 'User saved'
-      })
+      toast('User saved')
     } catch (err) {
-      toast({
-        title: 'Error saving user',
-        variant: 'destructive'
+      toast('Error saving user', {
+        description: (err as any).message || undefined
       })
     }
     setIsSaving(false)
@@ -160,15 +160,18 @@ export const Render: FC<{
                       onClick={async () => {
                         setIsDeleting(true)
                         try {
-                          await deleteUser(user.id)
-                          toast({
-                            title: 'User deleted'
-                          })
-                          router.push('/users')
+                          const res = await deleteUserAction(user.id)
+                          if (!res?.data?.success)
+                            throw new Error(
+                              res?.serverError ||
+                                'No success returned from server'
+                            )
+                          toast('User deleted')
+                          router.replace('/users')
                         } catch (err) {
-                          toast({
-                            title: 'Error deleting user',
-                            variant: 'destructive'
+                          toast('Error deleting user', {
+                            description:
+                              (err as any).message || 'Something went wrong'
                           })
                         }
                         setIsDeleting(false)
@@ -265,7 +268,7 @@ export const Render: FC<{
             )}
           />
 
-          {form.getValues('type') === UserType.Normal ? (
+          {form.getValues('type') === 'Normal' ? (
             <FormField
               control={form.control}
               name="roleId"
@@ -310,7 +313,7 @@ export const Render: FC<{
             },
             {
               label: 'Updated At',
-              value: timesAgo(user.updatedAt)
+              value: user.updatedAt ? timesAgo(user.updatedAt) : '-'
             }
           ]}
         />

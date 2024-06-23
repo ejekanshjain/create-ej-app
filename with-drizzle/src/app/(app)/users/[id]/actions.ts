@@ -1,104 +1,61 @@
 'use server'
 
-import { UserType } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
-import { authGuard } from '@/lib/auth'
-import { prisma } from '@/lib/db'
-import { UnwrapPromise } from '@/types/UnwrapPromise'
+import { authActionClient } from '@/lib/safe-action'
+import {
+  createUserUseCase,
+  deleteUserUseCase,
+  getUserByIdUseCase,
+  updateUserUseCase
+} from '@/use-case/user'
+import { UserCreateUpdateSchema, UserUpdateServerSchema } from './validation'
 
-export const getUser = async (id: string) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
+export const getUserAction = authActionClient
+  .schema(z.string())
+  .action(async ({ parsedInput: id, ctx }) => {
+    return await getUserByIdUseCase(ctx.user.type, id)
+  })
 
-  return await prisma.user.findUnique({
-    where: {
+export const createUserAction = authActionClient
+  .schema(UserCreateUpdateSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const id = await createUserUseCase(ctx.user.type, parsedInput)
+
+    revalidatePath('/users')
+    revalidatePath(`/users/${id}`)
+
+    return {
+      success: true,
       id
-    },
-    include: {
-      role: {
-        select: {
-          id: true,
-          name: true
-        }
-      }
     }
   })
-}
 
-export type GetUserFnDataType = UnwrapPromise<ReturnType<typeof getUser>>
-
-export const createUser = async ({
-  name,
-  email,
-  type,
-  roleId
-}: {
-  name: string
-  email: string
-  type: UserType
-  roleId?: string | null
-}) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  const { id } = await prisma.user.create({
-    data: {
+export const updateUserAction = authActionClient
+  .schema(UserUpdateServerSchema)
+  .action(async ({ parsedInput: { id, name, type, roleId }, ctx }) => {
+    await updateUserUseCase(ctx.user.type, id, {
       name,
-      email,
       type,
       roleId
+    })
+
+    revalidatePath('/users')
+    revalidatePath(`/users/${id}`)
+
+    return {
+      success: true
     }
   })
 
-  revalidatePath('/users')
-  revalidatePath(`/users/${id}`)
+export const deleteUserAction = authActionClient
+  .schema(z.string())
+  .action(async ({ parsedInput: id, ctx }) => {
+    await deleteUserUseCase(ctx.user.type, id)
 
-  return id
-}
+    revalidatePath('/users')
+    revalidatePath(`/users/${id}`)
 
-export const updateUser = async ({
-  id,
-  name,
-  email,
-  type,
-  roleId
-}: {
-  id: string
-  name: string
-  email: string
-  type: UserType
-  roleId?: string | null
-}) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  await prisma.user.update({
-    where: {
-      id
-    },
-    data: {
-      name,
-      email,
-      type,
-      roleId
-    }
+    return { success: true }
   })
-
-  revalidatePath('/users')
-  revalidatePath(`/users/${id}`)
-}
-
-export const deleteUser = async (id: string) => {
-  const session = await authGuard(['Root'])
-  if (!session) throw new Error('Unauthorized')
-
-  await prisma.user.delete({
-    where: {
-      id
-    }
-  })
-
-  revalidatePath('/users')
-  revalidatePath(`/users/${id}`)
-}

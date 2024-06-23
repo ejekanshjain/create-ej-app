@@ -1,7 +1,7 @@
 import {
   createRole,
   deleteRole,
-  getRoleWithPermissions,
+  getRoleByIdWithPermissions,
   getRoles,
   getRolesMini,
   updateRole,
@@ -50,12 +50,12 @@ export const getRolesMiniUseCase = async (
   return await getRolesMini()
 }
 
-export const getRoleWithPermissionsUseCase = async (
+export const getRoleByIdWithPermissionsUseCase = async (
   currentUserType: UserType['type'],
   id: string
 ) => {
   if (currentUserType !== 'Root') throw new Error('Unauthorized')
-  return await getRoleWithPermissions(id)
+  return await getRoleByIdWithPermissions(id)
 }
 
 type createRoleUseCaseInput = {

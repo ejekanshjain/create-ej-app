@@ -1,15 +1,22 @@
-import { UserType, getUsersWithRole, updateUserById } from '@/data-access/user'
+import {
+  UserType,
+  createUser,
+  deleteUser,
+  getUserById,
+  getUsersWithRole,
+  updateUser
+} from '@/data-access/user'
 import { type SortOrderEnum } from '@/lib/sortOrderEnum'
 
 type UpdateUserNameUseCaseInput = {
   name: string
 }
 
-export const updateUserNameUseCase = async (
-  id: string,
+export const updateCurrentUserNameUseCase = async (
+  currentUserId: string,
   data: UpdateUserNameUseCaseInput
 ) => {
-  await updateUserById(id, {
+  await updateUser(currentUserId, {
     name: data.name
   })
 }
@@ -48,4 +55,63 @@ export const getUsersWithRoleUseCase = async (
         }
       : undefined
   })
+}
+
+export const getUserByIdUseCase = async (
+  currentUserType: UserType['type'],
+  id: string
+) => {
+  if (currentUserType !== 'Root') throw new Error('Unauthorized')
+
+  return await getUserById(id)
+}
+
+type createUserUseCaseInput = {
+  name?: string | null
+  email: string
+  type: UserType['type']
+  roleId?: string | null
+}
+
+export const createUserUseCase = async (
+  currentUserType: UserType['type'],
+  data: createUserUseCaseInput
+) => {
+  if (currentUserType !== 'Root') throw new Error('Unauthorized')
+
+  return await createUser({
+    name: data.name,
+    email: data.email,
+    type: data.type,
+    roleId: data.roleId
+  })
+}
+
+type updateUserUseCaseInput = {
+  name: string
+  type: UserType['type']
+  roleId?: string | null
+}
+
+export const updateUserUseCase = async (
+  currentUserType: UserType['type'],
+  id: string,
+  data: updateUserUseCaseInput
+) => {
+  if (currentUserType !== 'Root') throw new Error('Unauthorized')
+
+  await updateUser(id, {
+    name: data.name,
+    type: data.type,
+    roleId: data.roleId
+  })
+}
+
+export const deleteUserUseCase = async (
+  currentUserType: UserType['type'],
+  id: string
+) => {
+  if (currentUserType !== 'Root') throw new Error('Unauthorized')
+
+  await deleteUser(id)
 }

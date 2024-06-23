@@ -150,7 +150,10 @@ export const Render: FC<{
                           toast('Role deleted')
                           router.replace('/roles')
                         } catch (err) {
-                          toast('Error deleting role')
+                          toast('Error deleting role', {
+                            description:
+                              (err as any).message || 'Something went wrong'
+                          })
                         }
                         setIsDeleting(false)
                       }}

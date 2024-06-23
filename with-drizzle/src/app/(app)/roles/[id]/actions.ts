@@ -7,7 +7,7 @@ import { authActionClient } from '@/lib/safe-action'
 import {
   createRoleUseCase,
   deleteRoleUseCase,
-  getRoleWithPermissionsUseCase,
+  getRoleByIdWithPermissionsUseCase,
   updateRoleUseCase
 } from '@/use-case/role'
 import { RoleCreateUpdateSchema, RoleUpdateServerSchema } from './validation'
@@ -15,7 +15,7 @@ import { RoleCreateUpdateSchema, RoleUpdateServerSchema } from './validation'
 export const getRoleAction = authActionClient
   .schema(z.string())
   .action(async ({ parsedInput: id, ctx }) => {
-    return await getRoleWithPermissionsUseCase(ctx.user.type, id)
+    return await getRoleByIdWithPermissionsUseCase(ctx.user.type, id)
   })
 
 export const createRoleAction = authActionClient

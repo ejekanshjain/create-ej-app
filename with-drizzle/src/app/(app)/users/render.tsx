@@ -94,7 +94,7 @@ export const Render: FC<{
               <DataTableColumnHeader column={column} title="Updated At" />
             ),
             cell: ({ row }) =>
-              row.original.updatedAt ? timesAgo(row.original.updatedAt) : '-'
+              row.original.updatedAt ? timesAgo(row.original.updatedAt) : null
           }
         ]}
         data={data.users}

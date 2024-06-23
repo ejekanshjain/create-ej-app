@@ -6,9 +6,13 @@ import { type SortOrderEnum } from '@/lib/sortOrderEnum'
 
 export type UserType = InferSelectModel<typeof User>
 
-type updateUserByIdInput = { name: string }
+type updateUserByIdInput = {
+  name?: string | null
+  type?: UserType['type']
+  roleId?: string | null
+}
 
-export const updateUserById = async (id: string, data: updateUserByIdInput) => {
+export const updateUser = async (id: string, data: updateUserByIdInput) => {
   await db.update(User).set(data).where(eq(User.id, id))
 }
 
@@ -71,4 +75,55 @@ export const getUsersWithRole = async ({
   ])
 
   return { users, total: total[0]?.count || 0 }
+}
+
+export const getUserById = async (id: string) => {
+  return await db.query.User.findFirst({
+    where: eq(User.id, id),
+    columns: {
+      id: true,
+      name: true,
+      email: true,
+      emailVerified: true,
+      type: true,
+      roleId: true,
+      createdAt: true,
+      updatedAt: true
+    }
+  })
+}
+
+type createUserInput = {
+  name?: string | null
+  email: string
+  type: UserType['type']
+  roleId?: string | null
+}
+
+export const createUser = async ({
+  name,
+  email,
+  type,
+  roleId
+}: createUserInput) => {
+  const newUser = await db
+    .insert(User)
+    .values({
+      name,
+      email,
+      type,
+      roleId
+    })
+    .returning({
+      id: User.id
+    })
+
+  const id = newUser[0]?.id
+  if (!id) throw new Error('Failed to create user')
+
+  return id
+}
+
+export const deleteUser = async (id: string) => {
+  return await db.delete(User).where(eq(User.id, id))
 }
