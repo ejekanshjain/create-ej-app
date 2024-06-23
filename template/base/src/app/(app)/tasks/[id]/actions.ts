@@ -1,3 +1,6 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 import { authActionClient } from '@/lib/safe-action'
@@ -7,7 +10,7 @@ import {
   getTaskByIdWithUserUseCase,
   updateTaskUseCase
 } from '@/use-case/task'
-import { TaskCreateUpdateSchema, TaskUpdateServerSchema } from './validations'
+import { TaskCreateUpdateSchema, TaskUpdateServerSchema } from './validation'
 
 export const getTaskAction = authActionClient
   .schema(z.string())
@@ -18,17 +21,39 @@ export const getTaskAction = authActionClient
 export const createTaskAction = authActionClient
   .schema(TaskCreateUpdateSchema)
   .action(async ({ parsedInput, ctx }) => {
-    return await createTaskUseCase(ctx.user, parsedInput)
+    const id = await createTaskUseCase(ctx.user, parsedInput)
+
+    revalidatePath('/tasks')
+    revalidatePath(`/tasks/${id}`)
+
+    return {
+      id,
+      success: true
+    }
   })
 
 export const updateTaskAction = authActionClient
   .schema(TaskUpdateServerSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    return await updateTaskUseCase(ctx.user, parsedInput)
+  .action(async ({ parsedInput: id, ctx }) => {
+    await updateTaskUseCase(ctx.user, id)
+
+    revalidatePath('/tasks')
+    revalidatePath(`/tasks/${id}`)
+
+    return {
+      success: true
+    }
   })
 
 export const deleteTaskAction = authActionClient
   .schema(z.string())
-  .action(async ({ parsedInput, ctx }) => {
-    return await deleteTaskUseCase(ctx.user, parsedInput)
+  .action(async ({ parsedInput: id, ctx }) => {
+    await deleteTaskUseCase(ctx.user, id)
+
+    revalidatePath('/tasks')
+    revalidatePath(`/tasks/${id}`)
+
+    return {
+      success: true
+    }
   })
