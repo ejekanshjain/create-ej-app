@@ -20,20 +20,23 @@ export const getTasksAction = authActionClient
       status: z.array(z.enum(TaskStatusEnumArr)).optional()
     })
   )
-  .action(async ({ parsedInput }) => {
-    return await getTasksWithUserUseCase({
-      page: parsedInput.page,
-      limit: parsedInput.limit,
-      sortBy: parsedInput.sortBy,
-      sortOrder: parsedInput.sortOrder,
-      filters:
-        parsedInput.title || parsedInput.status?.length
-          ? {
-              title: parsedInput.title || undefined,
-              status: parsedInput.status?.length
-                ? parsedInput.status
-                : undefined
-            }
-          : undefined
-    })
+  .action(async ({ parsedInput, ctx }) => {
+    return await getTasksWithUserUseCase(
+      { userType: ctx.user.type, roleId: ctx.user.roleId },
+      {
+        page: parsedInput.page,
+        limit: parsedInput.limit,
+        sortBy: parsedInput.sortBy,
+        sortOrder: parsedInput.sortOrder,
+        filters:
+          parsedInput.title || parsedInput.status?.length
+            ? {
+                title: parsedInput.title || undefined,
+                status: parsedInput.status?.length
+                  ? parsedInput.status
+                  : undefined
+              }
+            : undefined
+      }
+    )
   })

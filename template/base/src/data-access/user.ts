@@ -1,4 +1,13 @@
-import { InferSelectModel, asc, count, desc, eq, ilike, or } from 'drizzle-orm'
+import {
+  InferSelectModel,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  or,
+  sql
+} from 'drizzle-orm'
 
 import { db } from '@/db'
 import { User } from '@/db/schema'
@@ -13,7 +22,10 @@ type updateUserByIdInput = {
 }
 
 export const updateUser = async (id: string, data: updateUserByIdInput) => {
-  await db.update(User).set(data).where(eq(User.id, id))
+  await db
+    .update(User)
+    .set({ ...data, updatedAt: sql`now()` })
+    .where(eq(User.id, id))
 }
 
 type getUsersInput = {
