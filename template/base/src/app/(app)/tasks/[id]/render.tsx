@@ -375,7 +375,7 @@ export const Render: FC<{
       </Form>
 
       {isEditorMounted ? (
-        <div className="mx-auto w-full mt-5 prose prose-neutral dark:prose-invert">
+        <div className="prose prose-neutral mx-auto mt-5 w-full dark:prose-invert">
           <h3 className="w-full bg-transparent text-3xl font-bold">
             Description
           </h3>

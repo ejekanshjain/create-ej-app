@@ -1,6 +1,5 @@
-import type { Config } from 'prettier'
-
-const prettierConfig: Config = {
+/** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
+const config = {
   plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-tailwindcss'],
   arrowParens: 'avoid',
   trailingComma: 'none',
@@ -9,4 +8,4 @@ const prettierConfig: Config = {
   tabWidth: 2
 }
 
-export default prettierConfig
+export default config
