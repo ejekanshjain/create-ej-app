@@ -371,24 +371,25 @@ export const Render: FC<{
               </FormItem>
             )}
           />
-
-          {isEditorMounted ? (
-            <div className="col-span-1 md:col-span-2 w-full mt-5 prose prose-neutral mx-auto dark:prose-invert">
-              <h3 className="w-full bg-transparent text-3xl font-bold">
-                Description
-              </h3>
-              <div id="editor" className="min-h-[360px] w-full" />
-              <p className="text-sm text-gray-500">
-                Use{' '}
-                <kbd className="rounded-md border bg-muted px-1 text-xs uppercase">
-                  Tab
-                </kbd>{' '}
-                to open the command menu.
-              </p>
-            </div>
-          ) : undefined}
         </form>
       </Form>
+
+      {isEditorMounted ? (
+        <div className="mx-auto w-full mt-5 prose prose-neutral dark:prose-invert">
+          <h3 className="w-full bg-transparent text-3xl font-bold">
+            Description
+          </h3>
+          <div id="editor" className="min-h-[360px] w-full" />
+          <p className="text-sm text-gray-500">
+            Use{' '}
+            <kbd className="rounded-md border bg-muted px-1 text-xs uppercase">
+              /
+            </kbd>{' '}
+            to open the command menu.
+          </p>
+        </div>
+      ) : undefined}
+
       {task ? (
         <SystemInfo
           items={[
