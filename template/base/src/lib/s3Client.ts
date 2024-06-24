@@ -1,8 +1,11 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-
-import { env } from '@/env.mjs'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createId } from '@paralleldrive/cuid2'
 import { Readable } from 'stream'
+
+import { db } from '@/db'
+import { Resource } from '@/db/schema'
+import { env } from '@/env.mjs'
 
 const HOST = `https://${env.S3_BUCKET}.s3.${env.S3_REGION}.amazonaws.com`
 
@@ -50,6 +53,50 @@ export const uploadFile = async (input: uploadFileS3Input) => {
     url,
     key,
     response
+  }
+}
+
+export const getPresignedUrl = async ({
+  filename,
+  isPublic
+}: {
+  filename: string
+  isPublic?: boolean
+}) => {
+  const id = createId()
+
+  const key = `${id}_${filename}`
+
+  const url = getUrl(key)
+
+  const r = await db.insert(Resource).values({
+    id,
+    filename,
+    key,
+    isTemp: true,
+    url
+  })
+
+  const command = new PutObjectCommand({
+    Bucket: env.S3_BUCKET,
+    Key: key,
+    ContentDisposition: `filename="${filename}"`,
+    Metadata: {
+      id,
+      filename
+    },
+    ACL: isPublic ? 'public-read' : undefined
+  })
+
+  const signedUrl = await getSignedUrl(s3Client, command, {
+    expiresIn: 300
+  })
+
+  return {
+    id,
+    key,
+    url,
+    signedUrl
   }
 }
 

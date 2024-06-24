@@ -244,10 +244,7 @@ export const Resource = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     filename: varchar('filename', { length: 255 }).notNull(),
-    path: varchar('path', { length: 255 }).notNull(),
     key: varchar('key', { length: 255 }).notNull().unique(),
-    size: integer('size').notNull(),
-    mimeType: varchar('mimeType', { length: 255 }).notNull(),
     isTemp: boolean('isTemp').notNull().default(false),
     url: varchar('url', { length: 255 }).notNull().unique(),
 

@@ -67,3 +67,7 @@ export const deleteTaskAction = authActionClient
       success: true
     }
   })
+
+export const getUploadPresignedUrlAction = authActionClient
+  .schema(z.object({}))
+  .action(async () => {})
