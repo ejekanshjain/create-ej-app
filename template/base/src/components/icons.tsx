@@ -1,6 +1,7 @@
 import { cn } from '@/lib/cn'
 import {
   ArrowDown,
+  ArrowRight,
   ArrowUp,
   ArrowUpDown,
   Biohazard,
@@ -40,6 +41,7 @@ export const Icons = {
   moon: Moon,
   laptop: Laptop,
   chevronLeft: ChevronLeft,
+  arrowRight: ArrowRight,
   github: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

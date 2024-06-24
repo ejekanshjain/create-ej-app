@@ -1,4 +1,4 @@
-/** @type {import('postcss-load-config').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
+/** @type {import('postcss-load-config').Config} */
 const config = {
   plugins: {
     tailwindcss: {}

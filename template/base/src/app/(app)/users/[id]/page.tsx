@@ -25,7 +25,7 @@ const UserPage = async ({
   const g = await authGuard(session)
   if (!g) return notFound()
 
-  const roles = await getRolesMiniAction()
+  const roles = await getRolesMiniAction(undefined)
   if (!roles?.data) return notFound()
 
   if (id === 'new') return <Render roles={roles.data} />

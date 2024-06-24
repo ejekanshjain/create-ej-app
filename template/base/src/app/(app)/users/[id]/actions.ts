@@ -61,6 +61,8 @@ export const deleteUserAction = authActionClient
     return { success: true }
   })
 
-export const getRolesMiniAction = authActionClient.action(async ({ ctx }) => {
-  return await getRolesMiniUseCase(ctx.user.type)
-})
+export const getRolesMiniAction = authActionClient
+  .schema(z.undefined())
+  .action(async ({ ctx }) => {
+    return await getRolesMiniUseCase(ctx.user.type)
+  })
