@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
+import { uploadFile } from '@/lib/s3Client'
 import { authActionClient } from '@/lib/safe-action'
 import {
   createTaskUseCase,
@@ -10,6 +11,7 @@ import {
   getTaskByIdWithUserUseCase,
   updateTaskUseCase
 } from '@/use-case/task'
+import { readFile } from 'fs/promises'
 import { TaskCreateUpdateSchema, TaskUpdateServerSchema } from './validation'
 
 export const getTaskAction = authActionClient
@@ -39,6 +41,14 @@ export const updateTaskAction = authActionClient
 
     revalidatePath('/tasks')
     revalidatePath(`/tasks/${id}`)
+
+    console.log(
+      await uploadFile({
+        body: await readFile('package.json'),
+        filename: 'package.json',
+        isPublic: true
+      })
+    )
 
     return {
       success: true
