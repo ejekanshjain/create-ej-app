@@ -9,7 +9,7 @@ import { Render } from './render'
 export const generateMetadata = async (props: {
   params: { id: string }
 }): Promise<Metadata> => ({
-  title: 'User - ' + props.params.id + ' | ' + siteConfig.name
+  title: 'Task - ' + props.params.id + ' | ' + siteConfig.name
 })
 
 const TaskPage = async ({

@@ -46,7 +46,12 @@ import {
 import { Task } from '@/db/schema'
 import { formatDateTime, timesAgo } from '@/lib/formatDate'
 import { generateLabel } from '@/lib/generateLabel'
-import { createTaskAction, deleteTaskAction, updateTaskAction } from './actions'
+import {
+  createTaskAction,
+  deleteTaskAction,
+  getTaskImageUploadPresignedUrlAction,
+  updateTaskAction
+} from './actions'
 import { TaskCreateUpdateSchema, TaskStatusEnumArr } from './validation'
 
 type FormData = z.infer<typeof TaskCreateUpdateSchema>
@@ -124,8 +129,8 @@ export const Render: FC<{
     // @ts-ignore
     const Code = (await import('@editorjs/code')).default
 
-    // // @ts-ignore
-    // const Image = (await import('@editorjs/image')).default
+    // @ts-ignore
+    const Image = (await import('@editorjs/image')).default
 
     if (!editorRef.current) {
       const editor = new EditorJS({
@@ -145,36 +150,66 @@ export const Render: FC<{
           quote: Quote,
           delimiter: Delimiter,
           inlineCode: InlineCode,
-          code: Code
-          // image: {
-          //   class: Image,
-          //   config: {
-          //     uploader: {
-          //       async uploadByFile(file: any) {
-          //         const formData = new FormData()
-          //         formData.append('file', file)
-          //         const res = await fetch('/api/upload', {
-          //           method: 'POST',
-          //           body: formData
-          //         })
-          //         const json = await res.json()
-          //         if (json.success && json.id && json.url) {
-          //           return {
-          //             success: true,
-          //             file: {
-          //               id: json.id,
-          //               url: json.url
-          //             }
-          //           }
-          //         } else {
-          //           return {
-          //             success: false
-          //           }
-          //         }
-          //       }
-          //     }
-          //   }
-          // }
+          code: Code,
+          image: {
+            class: Image,
+            config: {
+              uploader: {
+                async uploadByFile(file: File) {
+                  try {
+                    const res = await getTaskImageUploadPresignedUrlAction(
+                      file.name
+                    )
+                    if (res?.data) {
+                      console.log(res.data.signedUrl)
+
+                      const formData = new FormData()
+                      formData.append('file', file)
+                      const response = await fetch(res.data.signedUrl, {
+                        method: 'PUT',
+                        mode: 'no-cors',
+                        body: file
+                      })
+                      console.log(await response.text())
+
+                      return {
+                        success: true,
+                        file: {
+                          id: res.data.id,
+                          url: res.data.url
+                        }
+                      }
+                    }
+                    throw new Error('No success returned from server')
+                  } catch (err) {
+                    return {
+                      success: false
+                    }
+                  }
+                  // const formData = new FormData()
+                  // formData.append('file', file)
+                  // const res = await fetch('/api/upload', {
+                  //   method: 'POST',
+                  //   body: formData
+                  // })
+                  // const json = await res.json()
+                  // if (json.success && json.id && json.url) {
+                  //   return {
+                  //     success: true,
+                  //     file: {
+                  //       id: json.id,
+                  //       url: json.url
+                  //     }
+                  //   }
+                  // } else {
+                  //   return {
+                  //     success: false
+                  //   }
+                  // }
+                }
+              }
+            }
+          }
         }
       })
     }

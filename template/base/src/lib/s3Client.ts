@@ -1,11 +1,12 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { S3Client } from '@aws-sdk/client-s3'
+import { createPresignedPost } from '@aws-sdk/s3-presigned-post'
 import { createId } from '@paralleldrive/cuid2'
-import { Readable } from 'stream'
 
 import { db } from '@/db'
 import { Resource } from '@/db/schema'
 import { env } from '@/env.mjs'
+import { eq } from 'drizzle-orm'
+import { extname } from 'path'
 
 const HOST = `https://${env.S3_BUCKET}.s3.${env.S3_REGION}.amazonaws.com`
 
@@ -19,57 +20,33 @@ export const s3Client = new S3Client({
 
 export const getUrl = (key: string) => `${HOST}/${key}`
 
-type uploadFileS3Input = {
-  filename: string
-  body: string | Uint8Array | Buffer | Readable
-  isPublic?: boolean
-  isTemp?: boolean
-  createdById?: string
-}
-
-export const uploadFile = async (input: uploadFileS3Input) => {
-  const id = createId()
-
-  const key = `${id}_${input.filename}`
-
-  const response = await s3Client.send(
-    new PutObjectCommand({
-      Bucket: env.S3_BUCKET,
-      Key: key,
-      Body: input.body,
-      ContentDisposition: `filename="${input.filename}"`,
-      Metadata: {
-        id,
-        filename: input.filename
-      },
-      ACL: input.isPublic ? 'public-read' : undefined
-    })
-  )
-
-  const url = getUrl(key)
-
-  return {
-    id,
-    url,
-    key,
-    response
-  }
-}
+const uploadLimit = 1024 * 1024 * 25 // 25MB
 
 export const getPresignedUrl = async ({
   filename,
-  isPublic
+  contentType,
+  contentTypeStartsWith,
+  isPublic,
+  createdById
 }: {
   filename: string
+  contentType?: string
+  contentTypeStartsWith?: string
   isPublic?: boolean
+  createdById?: string | null
 }) => {
+  if (!contentType && !contentTypeStartsWith)
+    throw new Error('"contentType" or "contentTypeStartsWith" is required')
+
   const id = createId()
 
-  const key = `${id}_${filename}`
+  const extension = extname(filename)
+
+  const key = `${id}${extension}`
 
   const url = getUrl(key)
 
-  const r = await db.insert(Resource).values({
+  await db.insert(Resource).values({
     id,
     filename,
     key,
@@ -77,19 +54,31 @@ export const getPresignedUrl = async ({
     url
   })
 
-  const command = new PutObjectCommand({
+  const Conditions: any[] = [
+    ['content-length-range', 1024, uploadLimit],
+    { bucket: env.S3_BUCKET },
+    { key }
+  ]
+
+  if (isPublic) Conditions.push({ acl: 'public-read' })
+  if (contentType) Conditions.push(['eq', '$Content-Type', contentType])
+  if (contentTypeStartsWith)
+    Conditions.push(['starts-with', '$Content-Type', contentTypeStartsWith])
+
+  const { url: signedUrl } = await createPresignedPost(s3Client, {
     Bucket: env.S3_BUCKET,
     Key: key,
-    ContentDisposition: `filename="${filename}"`,
-    Metadata: {
-      id,
-      filename
-    },
-    ACL: isPublic ? 'public-read' : undefined
-  })
-
-  const signedUrl = await getSignedUrl(s3Client, command, {
-    expiresIn: 300
+    Expires: 300,
+    Fields: {
+      key,
+      acl: isPublic ? 'public-read' : 'private',
+      metadata: JSON.stringify({
+        id,
+        filename,
+        extension,
+        createdById
+      })
+    }
   })
 
   return {
@@ -100,76 +89,6 @@ export const getPresignedUrl = async ({
   }
 }
 
-// export const uploadFileS3 = async (input: uploadFileS3Input) => {
-//   const ogFilename = filename
-//   const randomId = randomUUID()
-//   filename = randomId + '_' + filename
-
-//   let ContentType
-//   if (filename.endsWith('.pdf')) ContentType = 'application/pdf'
-//   if (filename.endsWith('.png')) ContentType = 'image/png'
-//   if (filename.endsWith('.jpg')) ContentType = 'image/jpeg'
-//   if (filename.endsWith('.jpeg')) ContentType = 'image/jpeg'
-//   if (filename.endsWith('.gif')) ContentType = 'image/gif'
-
-//   const response = await s3Client.send(
-//     new PutObjectCommand({
-//       Bucket: env.AWS_BUCKET,
-//       Key: filename,
-//       Body: body,
-//       ContentType,
-//       ContentDisposition: `filename="${ogFilename}"`,
-//       Metadata: {
-//         originalFilename: ogFilename
-//       }
-//     })
-//   )
-//   const url = getUrl(filename)
-//   const cdnUrl = env.AWS_CDN ? `${env.AWS_CDN}/${filename}` : undefined
-//   const ResourceRepo = dataSource.getRepository(Resource)
-//   const resource = await ResourceRepo.save(
-//     ResourceRepo.create({
-//       id: randomId,
-//       filename,
-//       url,
-//       cdnUrl,
-//       source,
-//       isTemp,
-//       createdById: creatorId,
-//       updatedById: creatorId
-//     })
-//   )
-
-//   return {
-//     url,
-//     cdnUrl,
-//     filename,
-//     resource,
-//     response
-//   }
-// }
-
-// export const deleteFileS3 = async (id: string) => {
-//   if (!id) return
-//   return await dataSource.transaction(async manager => {
-//     const ResourceRepo = manager.getRepository(Resource)
-//     const resource = await ResourceRepo.findOne({
-//       where: { id },
-//       select: { id: true, filename: true }
-//     })
-//     if (!resource) return
-//     const Key = resource.filename
-//     await ResourceRepo.delete({
-//       id: resource.id
-//     })
-//     const response = await s3Client.send(
-//       new DeleteObjectCommand({
-//         Bucket: env.AWS_BUCKET,
-//         Key
-//       })
-//     )
-//     return {
-//       response
-//     }
-//   })
-// }
+export const markFileUploaded = async (id: string) => {
+  await db.update(Resource).set({ isTemp: false }).where(eq(Resource.id, id))
+}

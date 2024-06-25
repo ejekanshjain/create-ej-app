@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
-import { uploadFile } from '@/lib/s3Client'
+import { getPresignedUrl, markFileUploaded } from '@/lib/s3Client'
 import { authActionClient } from '@/lib/safe-action'
 import {
   createTaskUseCase,
@@ -11,7 +11,6 @@ import {
   getTaskByIdWithUserUseCase,
   updateTaskUseCase
 } from '@/use-case/task'
-import { readFile } from 'fs/promises'
 import { TaskCreateUpdateSchema, TaskUpdateServerSchema } from './validation'
 
 export const getTaskAction = authActionClient
@@ -42,14 +41,6 @@ export const updateTaskAction = authActionClient
     revalidatePath('/tasks')
     revalidatePath(`/tasks/${id}`)
 
-    console.log(
-      await uploadFile({
-        body: await readFile('package.json'),
-        filename: 'package.json',
-        isPublic: true
-      })
-    )
-
     return {
       success: true
     }
@@ -68,6 +59,28 @@ export const deleteTaskAction = authActionClient
     }
   })
 
-export const getUploadPresignedUrlAction = authActionClient
-  .schema(z.object({}))
-  .action(async () => {})
+export const getTaskImageUploadPresignedUrlAction = authActionClient
+  .schema(z.string())
+  .action(async ({ ctx, parsedInput: filename }) => {
+    return await getPresignedUrl({
+      filename: filename,
+      contentTypeStartsWith: 'image/',
+      createdById: ctx.user.id,
+      isPublic: true
+    })
+  })
+
+export const markTaskImageUploadedAction = authActionClient
+  .schema(z.string())
+  .action(async ({ parsedInput: id }) => {
+    try {
+      await markFileUploaded(id)
+      return {
+        success: true
+      }
+    } catch (err) {
+      return {
+        success: false
+      }
+    }
+  })
