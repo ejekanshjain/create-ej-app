@@ -50,6 +50,7 @@ import {
   createTaskAction,
   deleteTaskAction,
   getTaskImageUploadPresignedUrlAction,
+  markTaskImageUploadedAction,
   updateTaskAction
 } from './actions'
 import { TaskCreateUpdateSchema, TaskStatusEnumArr } from './validation'
@@ -161,16 +162,30 @@ export const Render: FC<{
                       file.name
                     )
                     if (res?.data) {
-                      console.log(res.data.signedUrl)
-
                       const formData = new FormData()
+
+                      for (const [key, value] of Object.entries(
+                        res.data.presigned.fields
+                      )) {
+                        formData.append(key, value)
+                      }
+
                       formData.append('file', file)
-                      const response = await fetch(res.data.signedUrl, {
-                        method: 'PUT',
-                        mode: 'no-cors',
-                        body: file
+
+                      const response = await fetch(res.data.presigned.url, {
+                        method: 'POST',
+                        body: formData
                       })
-                      console.log(await response.text())
+
+                      if (!response.ok)
+                        throw new Error('Failed to upload image to s3')
+
+                      const res2 = await markTaskImageUploadedAction(
+                        res.data.id
+                      )
+
+                      if (!res2?.data?.success)
+                        throw new Error('Failed to mark image uploaded')
 
                       return {
                         success: true,
@@ -186,26 +201,6 @@ export const Render: FC<{
                       success: false
                     }
                   }
-                  // const formData = new FormData()
-                  // formData.append('file', file)
-                  // const res = await fetch('/api/upload', {
-                  //   method: 'POST',
-                  //   body: formData
-                  // })
-                  // const json = await res.json()
-                  // if (json.success && json.id && json.url) {
-                  //   return {
-                  //     success: true,
-                  //     file: {
-                  //       id: json.id,
-                  //       url: json.url
-                  //     }
-                  //   }
-                  // } else {
-                  //   return {
-                  //     success: false
-                  //   }
-                  // }
                 }
               }
             }

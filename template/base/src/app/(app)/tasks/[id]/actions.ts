@@ -63,10 +63,10 @@ export const getTaskImageUploadPresignedUrlAction = authActionClient
   .schema(z.string())
   .action(async ({ ctx, parsedInput: filename }) => {
     return await getPresignedUrl({
-      filename: filename,
       contentTypeStartsWith: 'image/',
-      createdById: ctx.user.id,
-      isPublic: true
+      isPublic: true,
+      filename: filename,
+      createdById: ctx.user.id
     })
   })
 

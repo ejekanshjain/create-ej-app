@@ -1,6 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import { relations, sql } from 'drizzle-orm'
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -247,6 +248,8 @@ export const Resource = pgTable(
     key: varchar('key', { length: 255 }).notNull().unique(),
     isTemp: boolean('isTemp').notNull().default(false),
     url: varchar('url', { length: 255 }).notNull().unique(),
+    size: bigint('size', { mode: 'number' }).notNull(),
+    contentType: varchar('contentType', { length: 255 }).notNull(),
 
     taskId: text('taskId').references(() => Task.id),
 
