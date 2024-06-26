@@ -60,12 +60,18 @@ export const deleteTaskAction = authActionClient
   })
 
 export const getTaskImageUploadPresignedUrlAction = authActionClient
-  .schema(z.string())
-  .action(async ({ ctx, parsedInput: filename }) => {
+  .schema(
+    z.object({
+      filename: z.string().min(1),
+      contentType: z.string().min(1)
+    })
+  )
+  .action(async ({ ctx, parsedInput }) => {
     return await getPresignedUrl({
-      contentTypeStartsWith: 'image/',
+      // contentTypeStartsWith: 'image/',
       isPublic: true,
-      filename: filename,
+      filename: parsedInput.filename,
+      contentType: parsedInput.contentType,
       createdById: ctx.user.id
     })
   })

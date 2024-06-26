@@ -1,4 +1,5 @@
 import {
+  GetObjectCommand,
   HeadObjectCommand,
   HeadObjectCommandOutput,
   S3Client
@@ -32,19 +33,15 @@ const uploadLimit = 1024 * 1024 * 10 // 10 MB
 export const getPresignedUrl = async ({
   filename,
   contentType,
-  contentTypeStartsWith,
   isPublic,
   createdById
 }: {
   filename: string
-  contentType?: string
+  contentType: string
   contentTypeStartsWith?: string
   isPublic?: boolean
   createdById?: string | null
 }) => {
-  if (!contentType && !contentTypeStartsWith)
-    throw new Error('"contentType" or "contentTypeStartsWith" is required')
-
   const id = createId()
 
   const extension = extname(filename)
@@ -61,19 +58,19 @@ export const getPresignedUrl = async ({
     url,
     createdById,
     size: 0,
-    contentType: ''
+    contentType
   })
 
   const Conditions: any[] = [
     ['content-length-range', 1024, uploadLimit],
     { bucket: env.S3_BUCKET },
     { key }
+    // ['eq', '$Content-Type', contentType]
   ]
 
-  if (isPublic) Conditions.push({ acl: 'public-read' })
-  if (contentType) Conditions.push(['eq', '$Content-Type', contentType])
-  if (contentTypeStartsWith)
-    Conditions.push(['starts-with', '$Content-Type', contentTypeStartsWith])
+  // if (isPublic) Conditions.push({ acl: 'public-read' })
+  // if (contentTypeStartsWith)
+  //   Conditions.push(['starts-with', '$Content-Type', contentTypeStartsWith])
 
   const presigned = await createPresignedPost(s3Client, {
     Bucket: env.S3_BUCKET,
@@ -83,17 +80,29 @@ export const getPresignedUrl = async ({
     Fields: {
       ...(isPublic
         ? {
-            acl: 'public-read'
+            // acl: 'public-read'
           }
         : {}),
-      metadata: JSON.stringify({
+      Metadata: JSON.stringify({
         id,
         filename,
         extension,
-        createdById
-      })
-    }
-    // ContentDisposition: `filename="${filename}"`
+        createdById,
+        ContentDisposition: `filename="${filename}"`
+        // ContentType: contentType,
+        // 'Content-Type': contentType,
+        // contentType
+      }),
+      ContentDisposition: `filename="${filename}"`
+      // ContentType: contentType,
+      // 'Content-Type': contentType,
+      // contentType
+    },
+    // @ts-ignore
+    ContentDisposition: `filename="${filename}"`
+    // ContentType: contentType,
+    // 'Content-Type': contentType,
+    // contentType
   })
 
   return {
@@ -123,6 +132,16 @@ export const markFileUploaded = async (
   } catch (err) {
     throw new Error('File not found')
   }
+
+  console.log(
+    await s3Client.send(
+      new GetObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: resource.key
+      })
+    ),
+    resource.url
+  )
 
   await updateResource({
     id: resource.id,

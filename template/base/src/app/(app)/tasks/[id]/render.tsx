@@ -158,9 +158,10 @@ export const Render: FC<{
               uploader: {
                 async uploadByFile(file: File) {
                   try {
-                    const res = await getTaskImageUploadPresignedUrlAction(
-                      file.name
-                    )
+                    const res = await getTaskImageUploadPresignedUrlAction({
+                      filename: file.name,
+                      contentType: file.type
+                    })
                     if (res?.data) {
                       const formData = new FormData()
 
