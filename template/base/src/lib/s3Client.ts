@@ -1,5 +1,4 @@
 import {
-  GetObjectCommand,
   HeadObjectCommand,
   HeadObjectCommandOutput,
   S3Client
@@ -33,6 +32,7 @@ const uploadLimit = 1024 * 1024 * 10 // 10 MB
 export const getPresignedUrl = async ({
   filename,
   contentType,
+  contentTypeStartsWith,
   isPublic,
   createdById
 }: {
@@ -64,13 +64,17 @@ export const getPresignedUrl = async ({
   const Conditions: any[] = [
     ['content-length-range', 1024, uploadLimit],
     { bucket: env.S3_BUCKET },
-    { key }
-    // ['eq', '$Content-Type', contentType]
+    { key },
+    ['eq', '$Content-Type', contentType],
+    ['eq', '$x-amz-meta-filename', filename],
+    ['eq', '$x-amz-meta-extension', extension]
   ]
 
-  // if (isPublic) Conditions.push({ acl: 'public-read' })
-  // if (contentTypeStartsWith)
-  //   Conditions.push(['starts-with', '$Content-Type', contentTypeStartsWith])
+  if (isPublic) Conditions.push({ acl: 'public-read' })
+  if (contentTypeStartsWith)
+    Conditions.push(['starts-with', '$Content-Type', contentTypeStartsWith])
+  if (createdById)
+    Conditions.push(['eq', '$x-amz-meta-createdById', createdById])
 
   const presigned = await createPresignedPost(s3Client, {
     Bucket: env.S3_BUCKET,
@@ -80,29 +84,21 @@ export const getPresignedUrl = async ({
     Fields: {
       ...(isPublic
         ? {
-            // acl: 'public-read'
+            acl: 'public-read'
           }
         : {}),
-      Metadata: JSON.stringify({
-        id,
-        filename,
-        extension,
-        createdById,
-        ContentDisposition: `filename="${filename}"`
-        // ContentType: contentType,
-        // 'Content-Type': contentType,
-        // contentType
-      }),
-      ContentDisposition: `filename="${filename}"`
-      // ContentType: contentType,
-      // 'Content-Type': contentType,
-      // contentType
-    },
-    // @ts-ignore
-    ContentDisposition: `filename="${filename}"`
-    // ContentType: contentType,
-    // 'Content-Type': contentType,
-    // contentType
+
+      ...(createdById
+        ? {
+            'X-Amz-Meta-createdById': createdById
+          }
+        : {}),
+
+      'X-Amz-Meta-filename': filename,
+      'X-Amz-Meta-extension': extension,
+      'Content-Type': contentType,
+      'Content-Disposition': `inline; filename="${encodeURIComponent(filename)}"`
+    }
   })
 
   return {
@@ -132,16 +128,6 @@ export const markFileUploaded = async (
   } catch (err) {
     throw new Error('File not found')
   }
-
-  console.log(
-    await s3Client.send(
-      new GetObjectCommand({
-        Bucket: env.S3_BUCKET,
-        Key: resource.key
-      })
-    ),
-    resource.url
-  )
 
   await updateResource({
     id: resource.id,
