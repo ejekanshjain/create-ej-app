@@ -67,6 +67,7 @@ type createTaskUseCaseInput = {
   title: string
   description?: string | null
   status: TaskType['status']
+  imageIds?: string[] | null
 }
 
 export const createTaskUseCase = async (
@@ -93,6 +94,7 @@ type updateTaskUseCaseInput = {
   title?: string
   description?: string | null
   status?: TaskType['status']
+  imageIds?: string[] | null
 }
 
 export const updateTaskUseCase = async (
@@ -128,3 +130,35 @@ export const deleteTaskUseCase = async (
 
   return await deleteTask(id)
 }
+
+// const handleImages = async (imageIds: string[], taskId: string) => {
+//   const prevImages = await prisma.resource.findMany({
+//     where: {
+//       taskId
+//     }
+//   })
+
+//   for (const p of prevImages) {
+//     if (imageIds.includes(p.id)) continue
+//     await Promise.all([
+//       storageClient.deleteFile(p.newFilename),
+//       prisma.resource.delete({
+//         where: {
+//           id: p.id
+//         }
+//       })
+//     ])
+//   }
+
+//   if (imageIds.length)
+//     await prisma.resource.updateMany({
+//       where: {
+//         id: {
+//           in: imageIds
+//         }
+//       },
+//       data: {
+//         taskId
+//       }
+//     })
+// }

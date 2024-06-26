@@ -5,14 +5,17 @@ import {
 } from '@aws-sdk/client-s3'
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post'
 import { createId } from '@paralleldrive/cuid2'
-import { eq } from 'drizzle-orm'
 import { extname } from 'path'
 
-import { db } from '@/db'
-import { Resource } from '@/db/schema'
+import {
+  createResource,
+  getResourceById,
+  updateResource
+} from '@/data-access/resource'
 import { env } from '@/env.mjs'
+import { CurrentUser } from './currentUser'
 
-const HOST = `https://${env.S3_BUCKET}.s3.${env.S3_REGION}.amazonaws.com`
+export const S3_HOST = `https://${env.S3_BUCKET}.s3.${env.S3_REGION}.amazonaws.com`
 
 export const s3Client = new S3Client({
   region: env.S3_REGION,
@@ -22,7 +25,7 @@ export const s3Client = new S3Client({
   }
 })
 
-export const getUrl = (key: string) => `${HOST}/${key}`
+export const getUrl = (key: string) => `${S3_HOST}/${key}`
 
 const uploadLimit = 1024 * 1024 * 10 // 10 MB
 
@@ -50,7 +53,7 @@ export const getPresignedUrl = async ({
 
   const url = getUrl(key)
 
-  await db.insert(Resource).values({
+  await createResource({
     id,
     filename,
     key,
@@ -67,7 +70,7 @@ export const getPresignedUrl = async ({
     { key }
   ]
 
-  // if (isPublic) Conditions.push({ acl: 'public-read' })
+  if (isPublic) Conditions.push({ acl: 'public-read' })
   if (contentType) Conditions.push(['eq', '$Content-Type', contentType])
   if (contentTypeStartsWith)
     Conditions.push(['starts-with', '$Content-Type', contentTypeStartsWith])
@@ -80,7 +83,7 @@ export const getPresignedUrl = async ({
     Fields: {
       ...(isPublic
         ? {
-            // acl: 'public-read'
+            acl: 'public-read'
           }
         : {}),
       metadata: JSON.stringify({
@@ -101,14 +104,11 @@ export const getPresignedUrl = async ({
   }
 }
 
-export const markFileUploaded = async (id: string) => {
-  const resource = await db.query.Resource.findFirst({
-    where: eq(Resource.id, id),
-    columns: {
-      id: true,
-      key: true
-    }
-  })
+export const markFileUploaded = async (
+  currentUser: CurrentUser,
+  id: string
+) => {
+  const resource = await getResourceById(id)
 
   if (!resource) throw new Error('Resource not found')
 
@@ -124,12 +124,11 @@ export const markFileUploaded = async (id: string) => {
     throw new Error('File not found')
   }
 
-  await db
-    .update(Resource)
-    .set({
-      isTemp: false,
-      contentType: response.ContentType,
-      size: response.ContentLength
-    })
-    .where(eq(Resource.id, id))
+  await updateResource({
+    id: resource.id,
+    isTemp: false,
+    contentType: response.ContentType,
+    size: response.ContentLength,
+    updatedById: currentUser.id
+  })
 }

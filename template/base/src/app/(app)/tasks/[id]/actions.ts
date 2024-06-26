@@ -72,9 +72,9 @@ export const getTaskImageUploadPresignedUrlAction = authActionClient
 
 export const markTaskImageUploadedAction = authActionClient
   .schema(z.string())
-  .action(async ({ parsedInput: id }) => {
+  .action(async ({ parsedInput: id, ctx }) => {
     try {
-      await markFileUploaded(id)
+      await markFileUploaded(ctx.user, id)
       return {
         success: true
       }

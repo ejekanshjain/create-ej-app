@@ -7,7 +7,8 @@ export const TaskStatusEnumArr = Task.status.enumValues
 export const TaskCreateUpdateSchema = z.object({
   title: z.string().min(1).trim(),
   description: z.string().optional().nullable(),
-  status: z.enum(TaskStatusEnumArr)
+  status: z.enum(TaskStatusEnumArr),
+  imageIds: z.array(z.string()).optional().nullable()
 })
 
 export const TaskUpdateServerSchema = TaskCreateUpdateSchema.merge(

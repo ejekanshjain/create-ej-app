@@ -235,10 +235,23 @@ export const Render: FC<{
     setIsSaving(true)
     try {
       const editorData = await editorRef.current?.save()
+      const imageIds: string[] = []
+      if (editorData?.blocks)
+        for (const b of editorData.blocks)
+          if (
+            b.type === 'image' &&
+            b.data &&
+            b.data.file &&
+            b.data.file.id &&
+            b.data.file.url
+          )
+            imageIds.push(b.data.file.id)
+
       if (!task) {
         const res = await createTaskAction({
           ...data,
-          description: editorData ? JSON.stringify(editorData) : null
+          description: editorData ? JSON.stringify(editorData) : null,
+          imageIds
         })
         if (!res?.data?.success)
           throw new Error(res?.serverError || 'No success returned from server')
@@ -248,7 +261,8 @@ export const Render: FC<{
         const res = await updateTaskAction({
           id: task.id,
           ...data,
-          description: editorData ? JSON.stringify(editorData) : null
+          description: editorData ? JSON.stringify(editorData) : null,
+          imageIds
         })
         if (!res?.data?.success)
           throw new Error(res?.serverError || 'No success returned from server')
