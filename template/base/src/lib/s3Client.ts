@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   HeadObjectCommand,
   HeadObjectCommandOutput,
   S3Client
@@ -9,8 +10,9 @@ import { extname } from 'path'
 
 import {
   createResource,
+  deleteResource,
   getResourceById,
-  updateResource
+  updateResourceById
 } from '@/data-access/resource'
 import { env } from '@/env.mjs'
 import { CurrentUser } from './currentUser'
@@ -129,11 +131,26 @@ export const markFileUploaded = async (
     throw new Error('File not found')
   }
 
-  await updateResource({
+  await updateResourceById({
     id: resource.id,
     isTemp: false,
     contentType: response.ContentType,
     size: response.ContentLength,
     updatedById: currentUser.id
   })
+}
+
+export const deleteFile = async (id: string) => {
+  const resource = await getResourceById(id)
+
+  if (!resource) throw new Error('Resource not found')
+
+  await s3Client.send(
+    new DeleteObjectCommand({
+      Bucket: env.S3_BUCKET,
+      Key: resource.key
+    })
+  )
+
+  await deleteResource(id)
 }

@@ -1,6 +1,6 @@
 import { db } from '@/db'
 import { Resource } from '@/db/schema'
-import { eq, sql } from 'drizzle-orm'
+import { eq, or, sql } from 'drizzle-orm'
 
 type createResourceInput = {
   id?: string
@@ -38,7 +38,7 @@ export const getResourceById = async (id: string) => {
   })
 }
 
-type updateResourceInput = {
+type updateResourceByIdInput = {
   id: string
   isTemp?: boolean
   contentType?: string
@@ -48,7 +48,7 @@ type updateResourceInput = {
   taskId?: string | null
 }
 
-export const updateResource = async (data: updateResourceInput) => {
+export const updateResourceById = async (data: updateResourceByIdInput) => {
   return await db
     .update(Resource)
     .set({
@@ -56,4 +56,30 @@ export const updateResource = async (data: updateResourceInput) => {
       updatedAt: sql`now()`
     })
     .where(eq(Resource.id, data.id))
+}
+
+type updateResourceByIdsInput = {
+  ids: string[]
+  taskId?: string | null
+  updatedById?: string | null
+}
+
+export const updateResourceByIds = async (data: updateResourceByIdsInput) => {
+  return await db
+    .update(Resource)
+    .set({
+      ...data,
+      updatedAt: sql`now()`
+    })
+    .where(or(...data.ids.map(id => eq(Resource.id, id))))
+}
+
+export const getResourcesByTaskId = async (taskId: string) => {
+  return await db.query.Resource.findMany({
+    where: eq(Resource.taskId, taskId)
+  })
+}
+
+export const deleteResource = async (id: string) => {
+  return await db.delete(Resource).where(eq(Resource.id, id))
 }

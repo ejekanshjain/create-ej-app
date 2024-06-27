@@ -1,4 +1,8 @@
 import {
+  getResourcesByTaskId,
+  updateResourceByIds
+} from '@/data-access/resource'
+import {
   TaskType,
   createTask,
   deleteTask,
@@ -7,8 +11,29 @@ import {
   updateTask
 } from '@/data-access/task'
 import { CurrentUser } from '@/lib/currentUser'
+import { deleteFile } from '@/lib/s3Client'
 import { type SortOrderEnum } from '@/lib/sortOrderEnum'
 import { checkForRolePermissionUseCase } from './role-permission'
+
+const handleTaskImages = async (
+  imageIds: string[],
+  taskId: string,
+  updatedById: string
+) => {
+  const prevImages = await getResourcesByTaskId(taskId)
+
+  for (const p of prevImages) {
+    if (imageIds.includes(p.id)) continue
+    await deleteFile(p.id)
+  }
+
+  if (imageIds.length)
+    await updateResourceByIds({
+      ids: imageIds,
+      taskId,
+      updatedById
+    })
+}
 
 type getUsersUseCaseInput = {
   page: number
@@ -81,12 +106,15 @@ export const createTaskUseCase = async (
   )
   if (!c) throw new Error('Unauthorized')
 
-  return await createTask({
+  const taskId = await createTask({
     title: data.title,
     description: data.description,
     status: data.status,
     createdById: currentUser.id
   })
+
+  if (taskId)
+    await handleTaskImages(data.imageIds || [], taskId, currentUser.id)
 }
 
 type updateTaskUseCaseInput = {
@@ -108,13 +136,17 @@ export const updateTaskUseCase = async (
   )
   if (!c) throw new Error('Unauthorized')
 
-  return await updateTask({
+  const result = await updateTask({
     id: data.id,
     title: data.title,
     description: data.description,
     status: data.status,
     updatedById: currentUser.id
   })
+
+  await handleTaskImages(data.imageIds || [], data.id, currentUser.id)
+
+  return result
 }
 
 export const deleteTaskUseCase = async (
@@ -130,35 +162,3 @@ export const deleteTaskUseCase = async (
 
   return await deleteTask(id)
 }
-
-// const handleImages = async (imageIds: string[], taskId: string) => {
-//   const prevImages = await prisma.resource.findMany({
-//     where: {
-//       taskId
-//     }
-//   })
-
-//   for (const p of prevImages) {
-//     if (imageIds.includes(p.id)) continue
-//     await Promise.all([
-//       storageClient.deleteFile(p.newFilename),
-//       prisma.resource.delete({
-//         where: {
-//           id: p.id
-//         }
-//       })
-//     ])
-//   }
-
-//   if (imageIds.length)
-//     await prisma.resource.updateMany({
-//       where: {
-//         id: {
-//           in: imageIds
-//         }
-//       },
-//       data: {
-//         taskId
-//       }
-//     })
-// }
