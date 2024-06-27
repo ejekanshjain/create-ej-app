@@ -115,6 +115,8 @@ export const createTaskUseCase = async (
 
   if (taskId)
     await handleTaskImages(data.imageIds || [], taskId, currentUser.id)
+
+  return taskId
 }
 
 type updateTaskUseCaseInput = {
