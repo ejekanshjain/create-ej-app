@@ -45,6 +45,11 @@ program.action(async () => {
           name: 'prisma-advanced',
           message:
             'Advanced setup with User Types and ACLs (roles & permissions)'
+        },
+        {
+          name: 'new',
+          message:
+            'Advanced new setup with next 16, Better Auth and Drizzle ORM'
         }
       ]
     }
