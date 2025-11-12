@@ -1,89 +1,73 @@
-import { DrizzleAdapter } from '@auth/drizzle-adapter'
-import { InferSelectModel } from 'drizzle-orm'
-import {
-  Session as NextAuthSession,
-  getServerSession,
-  type DefaultSession,
-  type NextAuthOptions
-} from 'next-auth'
-import { Adapter } from 'next-auth/adapters'
-import EmailProvider from 'next-auth/providers/email'
-import GitHubProvider from 'next-auth/providers/github'
-import GoogleProvider from 'next-auth/providers/google'
+import { createId } from '@paralleldrive/cuid2'
+import { betterAuth } from 'better-auth'
+import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { admin, lastLoginMethod, magicLink } from 'better-auth/plugins'
+import { headers } from 'next/headers'
 import { cache } from 'react'
+import { db } from '~/db'
+import {
+  accountsTable,
+  sessionsTable,
+  usersTable,
+  verificationsTable
+} from '~/db/schema'
+import { env } from '~/env'
 
-import type { RolePermissionType } from '@/data-access/role-permission'
-import type { UserType } from '@/data-access/user'
-import { db } from '@/db'
-import { Account, Session, User, VerificationToken } from '@/db/schema'
-import { env } from '@/env.mjs'
-import { checkForRolePermissionUseCase } from '@/use-case/role-permission'
-
-declare module 'next-auth' {
-  interface Session extends DefaultSession {
-    user: {
-      id: string
-      type: UserType['type']
-      roleId?: string | null
-    } & DefaultSession['user']
-  }
-
-  interface User extends InferSelectModel<typeof User> {}
-}
-
-export const authOptions: NextAuthOptions = {
-  pages: {
-    signIn: '/login'
-  },
-  callbacks: {
-    session({ session, user }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: user.id,
-          type: user.type,
-          roleId: user.roleId
-        }
-      }
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: 'pg',
+    schema: {
+      user: usersTable,
+      session: sessionsTable,
+      account: accountsTable,
+      verification: verificationsTable
+    }
+  }),
+  account: {
+    accountLinking: {
+      enabled: true
     }
   },
-  adapter: DrizzleAdapter(db, {
-    usersTable: User,
-    accountsTable: Account,
-    sessionsTable: Session,
-    verificationTokensTable: VerificationToken
-  }) as Adapter,
-  providers: [
-    EmailProvider({
-      server: {
-        host: env.EMAIL_SERVER_HOST,
-        port: env.EMAIL_SERVER_PORT,
-        auth: {
-          user: env.EMAIL_SERVER_USER,
-          pass: env.EMAIL_SERVER_PASSWORD
-        }
-      },
-      from: env.EMAIL_FROM
+  advanced: {
+    database: {
+      generateId: ({ model }) => `${model}_${createId()}`
+    }
+  },
+  socialProviders: {
+    github: {
+      prompt: 'select_account',
+      clientId: env.BETTER_AUTH_GITHUB_ID,
+      clientSecret: env.BETTER_AUTH_GITHUB_SECRET
+    },
+    google: {
+      prompt: 'select_account',
+      clientId: env.BETTER_AUTH_GOOGLE_ID,
+      clientSecret: env.BETTER_AUTH_GOOGLE_SECRET
+    }
+  },
+  plugins: [
+    magicLink({
+      sendMagicLink: async ({ email, token, url }) => {
+        console.warn('TODO: send email', {
+          email,
+          token,
+          url
+        })
+      }
     }),
-    GoogleProvider({
-      clientId: env.GOOGLE_ID,
-      clientSecret: env.GOOGLE_SECRET
-    }),
-    GitHubProvider({
-      clientId: env.GITHUB_ID,
-      clientSecret: env.GITHUB_SECRET
-    })
+    admin(),
+    lastLoginMethod()
   ]
-}
+})
 
-export const getAuthSession = cache(() => getServerSession(authOptions))
+export const getAuthSession = cache(async () => {
+  const authSession = await auth.api.getSession({
+    headers: await headers()
+  })
 
-export const authGuard = cache(
-  (session: NextAuthSession, permission?: RolePermissionType['permission']) =>
-    checkForRolePermissionUseCase(
-      session.user.type,
-      session.user.roleId,
-      permission
-    )
-)
+  if (!authSession || !authSession.user || !authSession.session) return null
+
+  const isAdmin = authSession.user.role === 'admin'
+
+  return { ...authSession, isAdmin }
+})

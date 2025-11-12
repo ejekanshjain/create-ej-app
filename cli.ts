@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execSync } from 'child_process'
 import { program } from 'commander'
 import { prompt } from 'enquirer'
 import fs from 'fs'
@@ -11,6 +12,45 @@ interface Response {
   projectName: string
   description: string
   template: string
+  git: string
+}
+
+const detectPackageManager = () => {
+  const userAgent = process.env.npm_config_user_agent
+
+  if (userAgent) {
+    if (userAgent.startsWith('pnpm')) return 'pnpm'
+    if (userAgent.startsWith('yarn')) return 'yarn'
+    if (userAgent.startsWith('bun')) return 'bun'
+  }
+
+  return 'npm'
+}
+
+const getInstallCommand = (packageManager: string) => {
+  switch (packageManager) {
+    case 'pnpm':
+      return 'pnpm i'
+    case 'yarn':
+      return 'yarn'
+    case 'bun':
+      return 'bun i'
+    default:
+      return 'npm i'
+  }
+}
+
+const getDevCommand = (packageManager: string) => {
+  switch (packageManager) {
+    case 'pnpm':
+      return 'pnpm dev'
+    case 'yarn':
+      return 'yarn dev'
+    case 'bun':
+      return 'bun dev'
+    default:
+      return 'npm run dev'
+  }
 }
 
 program.action(async () => {
@@ -25,7 +65,7 @@ program.action(async () => {
       type: 'input',
       name: 'description',
       message: 'Enter a description for the project:',
-      initial: 'A Legendary App'
+      initial: 'A Legendary Next.js App'
     },
     {
       type: 'select',
@@ -34,28 +74,23 @@ program.action(async () => {
       choices: [
         {
           name: 'base',
-          message:
-            'Base setup with ts, shadcn, auth, drizzle, User Types and ACLs (roles & permissions)'
+          message: 'Base setup with Next 16, Better Auth, shadcn and Drizzle'
         },
         {
-          name: 'prisma',
-          message: 'Base setup with ts, shadcn, prisma, auth, editor.js'
-        },
-        {
-          name: 'prisma-advanced',
-          message:
-            'Advanced setup with User Types and ACLs (roles & permissions)'
-        },
-        {
-          name: 'new',
-          message:
-            'Advanced new setup with next 16, Better Auth and Drizzle ORM'
+          name: 'old',
+          message: 'old setup with ts, shadcn, auth, drizzle'
         }
       ]
+    },
+    {
+      type: 'select',
+      name: 'git',
+      message: 'Initialize a git repository?',
+      choices: ['yes', 'no']
     }
   ])
 
-  const { projectName, description, template } = response
+  const { projectName, description, template, git } = response
 
   const projectDir = path.join(process.cwd(), projectName)
 
@@ -85,8 +120,56 @@ program.action(async () => {
   const envExample = fs.readFileSync(envExampleFile, 'utf-8')
   fs.writeFileSync(path.join(projectDir, '.env'), envExample)
 
+  fs.writeFileSync(
+    path.join(projectDir, '.gitignore'),
+    `node_modules
+.next
+out
+build
+next-env.d.ts
+.DS_Store
+.env
+`
+  )
+
+  fs.writeFileSync(
+    path.join(projectDir, 'README.md'),
+    `# ${projectName}
+
+${description}
+`
+  )
+
+  if (git === 'yes') {
+    try {
+      execSync('git init', { cwd: projectDir, stdio: 'inherit' })
+    } catch (err) {
+      console.error('Error initializing git repository:', err)
+    }
+  }
+
+  const pm = detectPackageManager()
+  const installCommand = getInstallCommand(pm)
+  const devCommand = getDevCommand(pm)
+
   console.log(
-    `Created a new app called '${projectName}' 🎉\n\nTo get started, run the following commands:\n\ncd ${projectName}\nnpm install\nnpm run dev\n`
+    `
+Created a new app called '${projectName}' 🎉
+
+To open the project in vscode run:
+
+code ${projectName}
+
+
+To get started, run the following commands:
+cd ${projectName}
+
+${installCommand}
+
+${devCommand}
+
+Happy coding! 🚀
+`
   )
 })
 

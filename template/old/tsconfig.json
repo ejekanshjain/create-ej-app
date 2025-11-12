@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2022",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": true,
     "checkJs": true,
@@ -22,28 +22,26 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
         "name": "next"
-      },
-      {
-        "name": "workflow"
       }
     ],
     "paths": {
-      "~/*": ["./src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
+    ".eslintrc.cjs",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
+    "**/*.js",
     "**/*.cjs",
-    "**/*.mjs"
+    "**/*.mjs",
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

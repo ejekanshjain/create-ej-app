@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { getAuthSession } from '~/lib/auth'
 
 export default async function Layout({
@@ -8,8 +8,8 @@ export default async function Layout({
 }>) {
   const authSession = await getAuthSession()
 
-  if (!authSession) {
-    redirect('/auth')
+  if (!authSession?.isAdmin) {
+    notFound()
   }
 
   return (

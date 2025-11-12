@@ -1,19 +1,43 @@
 import { createSafeActionClient } from 'next-safe-action'
-
 import { getAuthSession } from './auth'
 
-const actionClient = createSafeActionClient()
+export const actionClient = createSafeActionClient().use(
+  async ({ next, ctx }) => {
+    const authSession = await getAuthSession()
 
-export const authActionClient = actionClient.use(async ({ next }) => {
-  const session = await getAuthSession()
+    return next({
+      ctx: {
+        ...ctx,
+        ...authSession
+      }
+    })
+  }
+)
 
-  if (!session?.user) {
+export const authActionClient = actionClient.use(async ({ ctx, next }) => {
+  if (!ctx?.user || !ctx?.session) {
     throw new Error('Unauthorized')
   }
 
   return next({
     ctx: {
-      user: session.user
+      ...ctx,
+      user: ctx.user,
+      session: ctx.session
+    }
+  })
+})
+
+export const adminActionClient = authActionClient.use(async ({ ctx, next }) => {
+  if (!ctx.isAdmin) {
+    throw new Error('Forbidden')
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+      session: ctx.session
     }
   })
 })

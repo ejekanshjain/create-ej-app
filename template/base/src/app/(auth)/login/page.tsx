@@ -1,49 +1,72 @@
+import { ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '~/components/ui/card'
+import { Separator } from '~/components/ui/separator'
+import { getAuthSession } from '~/lib/auth'
+import { EmailLoginForm } from './email-login-form'
+import { SocialLoginButtons } from './social-login-buttons'
 
-import { Icons } from '@/components/icons'
-import { Button } from '@/components/ui/button'
-import { Render } from './render'
+export default async function LoginPage() {
+  const authSession = await getAuthSession()
 
-const LoginPage = () => {
+  if (authSession) redirect('/')
+
   return (
-    <div className="container flex h-[90vh] w-screen flex-col items-center justify-center">
-      <Link href="/" className="absolute left-4 top-4">
-        <Button variant="ghost">
-          <Icons.chevronLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-      </Link>
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-80">
-        <div className="flex flex-col space-y-2 text-center">
-          <Icons.logo className="mx-auto h-6 w-6" />
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Welcome back
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Enter your email to sign in to your account
-          </p>
-        </div>
-        <Render />
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          By clicking continue, you agree to our{' '}
-          <Link
-            href="/terms"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Terms of Service
-          </Link>{' '}
-          and{' '}
-          <Link
-            href="/privacy"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Privacy Policy
-          </Link>
-          .
-        </p>
-      </div>
+    <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+            <ShoppingBag className="text-primary size-6" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+          <CardDescription className="text-muted-foreground text-sm">
+            Sign in to your account to continue
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="border-muted-foreground/50 bg-muted/50 rounded-lg border border-dashed p-4">
+            <p className="text-muted-foreground text-sm">
+              <strong>New to our site?</strong> No need to create a separate
+              account. Simply use one of the options below to both sign up and
+              log in.
+            </p>
+          </div>
+
+          <EmailLoginForm />
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background text-muted-foreground px-2">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <SocialLoginButtons />
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <Separator className="my-2" />
+          <div className="text-muted-foreground text-center text-sm">
+            <Link
+              href="/"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Return to home page
+            </Link>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
-
-export default LoginPage
