@@ -40,7 +40,7 @@ export default function RootLayout({
           >
             <Loader />
             {children}
-            {env.NODE_ENV === 'development' ? <ScreenSize /> : null}
+            {env.APP_ENV === 'development' ? <ScreenSize /> : null}
             <Toaster />
           </ThemeProvider>
         </ReactQueryProvider>

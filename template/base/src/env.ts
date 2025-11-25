@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z.enum(['development', 'production']),
+    APP_ENV: z.enum(['development', 'staging', 'production']),
     ANALYZE: z.string().optional(),
     DATABASE_URL: z.url(),
     BETTER_AUTH_URL: z.url(),
@@ -22,7 +22,7 @@ export const env = createEnv({
   client: {},
 
   runtimeEnv: {
-    NODE_ENV: process.env.NODE_ENV,
+    APP_ENV: process.env.APP_ENV,
     ANALYZE: process.env.ANALYZE,
     DATABASE_URL: process.env.DATABASE_URL,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
