@@ -33,11 +33,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ReactQueryProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            forcedTheme="light"
-          >
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Loader />
             {children}
             {env.APP_ENV === 'development' ? <ScreenSize /> : null}

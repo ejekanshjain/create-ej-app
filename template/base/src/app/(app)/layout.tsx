@@ -13,7 +13,7 @@ export default async function Layout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col space-y-6">
       <main className="flex-1">{children}</main>
     </div>
   )
