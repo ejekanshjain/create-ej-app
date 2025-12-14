@@ -3,8 +3,8 @@ import { siteConfig } from '~/lib/siteConfig'
 
 export const SiteFooter = () => {
   return (
-    <footer className="container border-t">
-      <div className="text-muted-foreground flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
+    <footer className="border-t">
+      <div className="text-muted-foreground container flex flex-col items-center justify-between gap-4 py-6 text-sm sm:flex-row">
         <p>
           &copy; {new Date().getUTCFullYear()} {siteConfig.name}. All rights
           reserved.
