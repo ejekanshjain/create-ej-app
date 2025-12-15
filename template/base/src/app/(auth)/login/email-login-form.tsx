@@ -16,7 +16,7 @@ import {
 } from '~/components/ui/form'
 import { Input } from '~/components/ui/input'
 import { signIn } from '~/lib/auth-client'
-import { toastSuccessMessage } from '~/lib/toast-message'
+import { toastErrorMessage, toastSuccessMessage } from '~/lib/toast-message'
 
 const emailLoginFormSchema = z.object({
   email: z.email()
@@ -49,6 +49,14 @@ export const EmailLoginForm = () => {
       toastSuccessMessage('Magic link sent! Check your email.')
     } catch (err) {
       console.error('Error sending magic link:', err)
+      if (
+        typeof err === 'object' &&
+        err &&
+        'message' in err &&
+        typeof err.message === 'string'
+      )
+        toastErrorMessage(err.message)
+      else toastErrorMessage('Something went wrong. Please try again.')
     } finally {
       setIsLoading(false)
     }

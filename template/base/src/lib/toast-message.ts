@@ -8,8 +8,8 @@ export const toastSuccessMessage = (message: string) =>
     position: 'top-center'
   })
 
-export const toastErrorMessage = () =>
-  toast.error('Something went wrong. Please try again later.', {
+export const toastErrorMessage = (message?: string) =>
+  toast.error(message || 'Something went wrong. Please try again later.', {
     richColors: true,
     position: 'top-center'
   })
