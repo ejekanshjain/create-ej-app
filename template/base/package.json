@@ -27,6 +27,7 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "drizzle-orm": "0.45.1",
+    "fakefilter": "0.1.1401",
     "lucide-react": "0.561.0",
     "next": "16.0.10",
     "next-safe-action": "8.0.11",

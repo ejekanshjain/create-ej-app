@@ -1,7 +1,13 @@
 import { createId } from '@paralleldrive/cuid2'
-import { betterAuth } from 'better-auth'
+import { APIError, betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { admin, lastLoginMethod, magicLink } from 'better-auth/plugins'
+import {
+  admin,
+  createAuthMiddleware,
+  lastLoginMethod,
+  magicLink
+} from 'better-auth/plugins'
+import { isFakeEmail } from 'fakefilter'
 import { headers } from 'next/headers'
 import { cache } from 'react'
 import { db } from '~/db'
@@ -57,7 +63,20 @@ export const auth = betterAuth({
     }),
     admin(),
     lastLoginMethod()
-  ]
+  ],
+  hooks: {
+    before: createAuthMiddleware(async ctx => {
+      if (
+        ctx.path === '/sign-in/magic-link' &&
+        ctx.body?.email &&
+        isFakeEmail(ctx.body.email)
+      ) {
+        throw new APIError('BAD_REQUEST', {
+          message: 'Please use a valid email address.'
+        })
+      }
+    })
+  }
 })
 
 export const getAuthSession = cache(async () => {
