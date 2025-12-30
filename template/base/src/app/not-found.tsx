@@ -1,15 +1,9 @@
 import Link from 'next/link'
-import { Navbar } from '~/components/navbar'
 import { Button } from '~/components/ui/button'
-import { getAuthSession } from '~/lib/auth'
 
-export default async function NotFound() {
-  const data = await getAuthSession()
-
+export default function NotFound() {
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
-      <Navbar isLoggedIn={!!data?.session} />
-
       <section className="flex min-h-[60vh] flex-col items-center justify-center px-4">
         <div className="text-center">
           <h1 className="text-foreground mb-2 text-6xl font-bold">404</h1>

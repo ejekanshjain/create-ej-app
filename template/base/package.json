@@ -5,10 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "analyze": "ANALYZE=true next build --webpack",
-    "start": "next start",
+    "build": "bun --bun next build",
+    "build:docker": "docker build -t my-app .",
+    "analyze": "ANALYZE=true bun --bun next build --webpack",
+    "start": "bun --bun next start",
     "lint": "eslint",
+    "type-check": "tsc --noEmit --incremental false",
     "format": "prettier --write \"./src/**/*.{js,cjs,mjs,jsx,ts,tsx}\"",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
@@ -60,12 +62,5 @@
     "prettier-plugin-tailwindcss": "0.7.2",
     "tailwindcss": "4.1.18",
     "typescript": "5.9.3"
-  },
-  "trustedDependencies": [
-    "@swc/core",
-    "@tailwindcss/oxide",
-    "esbuild",
-    "sharp",
-    "unrs-resolver"
-  ]
+  }
 }
