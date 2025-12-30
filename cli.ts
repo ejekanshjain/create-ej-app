@@ -127,7 +127,6 @@ program.action(async () => {
 out
 build
 next-env.d.ts
-*.tsbuildinfo
 .DS_Store
 .env
 `
