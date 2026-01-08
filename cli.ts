@@ -75,10 +75,6 @@ program.action(async () => {
         {
           name: 'base',
           message: 'Base setup with Next 16, Better Auth, shadcn and Drizzle'
-        },
-        {
-          name: 'old',
-          message: 'old setup with ts, shadcn, auth, drizzle'
         }
       ]
     },
@@ -129,6 +125,15 @@ build
 next-env.d.ts
 .DS_Store
 .env
+`
+  )
+
+  fs.writeFileSync(
+    path.join(projectDir, 'terraform', '.gitignore'),
+    `.terraform
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
 `
   )
 
