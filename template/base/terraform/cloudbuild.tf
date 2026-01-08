@@ -1,4 +1,4 @@
-resource "google_cloudbuild_trigger" "my-app-main-build-trigger" {
+resource "google_cloudbuild_trigger" "my_app_main_build_trigger" {
   name               = "my-app-main-build-trigger"
   description        = "Build trigger for My App"
   location           = "global"
