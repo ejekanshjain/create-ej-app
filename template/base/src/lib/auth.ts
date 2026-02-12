@@ -1,3 +1,4 @@
+import { validateEmail } from '@ejekanshjain/simple-email-validator'
 import { createId } from '@paralleldrive/cuid2'
 import { APIError, betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
@@ -7,7 +8,6 @@ import {
   lastLoginMethod,
   magicLink
 } from 'better-auth/plugins'
-import { isFakeEmail } from 'fakefilter'
 import { headers } from 'next/headers'
 import { cache } from 'react'
 import { db } from '~/db'
@@ -68,12 +68,21 @@ export const auth = betterAuth({
     before: createAuthMiddleware(async ctx => {
       if (
         ctx.path === '/sign-in/magic-link' &&
-        ctx.body?.email &&
-        isFakeEmail(ctx.body.email)
+        ctx.body?.email
       ) {
-        throw new APIError('BAD_REQUEST', {
-          message: 'Please use a valid email address.'
-        })
+        try {
+          const validation = await validateEmail({
+            email: ctx.body.email
+          })
+
+          if (validation.isValid === false) {
+            throw new APIError('BAD_REQUEST', {
+              message: 'Please use a valid email address.'
+            })
+          }
+        } catch (err) {
+          console.error('Email validation failed', err)
+        }
       }
     })
   }
