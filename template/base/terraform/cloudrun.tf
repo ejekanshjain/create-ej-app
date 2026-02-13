@@ -33,7 +33,7 @@ resource "google_cloud_run_v2_service" "my_app_prod" {
           cpu    = "1000m"
           memory = "1Gi"
         }
-        cpu_idle          = true
+        cpu_idle          = true # Set to false when using workflow
         startup_cpu_boost = true
       }
 
