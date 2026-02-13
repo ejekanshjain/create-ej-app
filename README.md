@@ -1,322 +1,257 @@
 # create-ej-app
 
-A powerful CLI tool to bootstrap production-ready Next.js applications with a modern tech stack including Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, and comprehensive deployment setup.
+A no-bullshit CLI to bootstrap a production-ready **fucking beast** of a app with Next.js, Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, and deployment wired up so you don’t screw your shit up in production.
 
 ```bash
 npx create-ej-app@latest
 ```
 
-## ✨ Features
+---
 
-- **Next.js 16** - Latest version with React 19, Server Components, and App Router
-- **Better Auth** - Complete authentication solution with:
-  - Email/Password authentication
-  - Magic Link login
-  - OAuth (GitHub, Google)
+## ✨ Features (aka the good shit)
+
+- **Next.js 16** – Powered by React 19, Server Components, App Router. Fast as hell.
+- **Better Auth** – Auth that doesn’t suck:
+  - Email/Password
+  - Magic link (because passwords are annoying as fuck)
+  - OAuth with GitHub and Google
   - Account linking
-  - Admin management capabilities
-- **Drizzle ORM** - Type-safe database access with PostgreSQL
-- **Elysia** - Bun-first ergonomic web framework for building backend APIs
-- **Workflow** - Durable execution framework for background jobs, long-running tasks, and reliable async workflows
-- **shadcn/ui** - Beautiful, accessible UI components
-- **TailwindCSS 4** - Utility-first CSS with the latest features
-- **TypeScript** - Full type safety across the stack
-- **Form Management** - react-hook-form with Zod validation
-- **Data Fetching** - TanStack Query (React Query) for server state management
-- **Server Actions** - Type-safe server actions with next-safe-action
-- **Email Service** - Built-in email support with Nodemailer
-- **Docker Support** - Production-ready Dockerfile included
-- **Terraform IaC** - Complete infrastructure setup for Google Cloud Platform
-- **Pre-configured Layouts** - Admin, App, Auth, and Marketing layouts
+  - Admin powers
 
-## 🚀 Quick Start
+- **Drizzle ORM** – Type-safe SQL over PostgreSQL without the usual ORM garbage.
+- **Elysia** – Built for Bun. Minimal, fast, no nonsense.
+- **Workflow** – Durable jobs so your background tasks don’t randomly die like weak shit.
+- **shadcn/ui** – Clean, accessible components built on Radix UI.
+- **TailwindCSS 4** – Utility-first styling with zero CSS drama. TailwindCSS
+- **TypeScript** – Strict types so you don’t ship dumb bugs. TypeScript
+- **TanStack Query** – Server state that doesn’t implode. TanStack Query
+- **Lucide React** – Icons that don’t look like 2009 garbage. Lucide React
+- **Docker + Terraform** – Ship this shit properly.
+- Terraform setup for Google Cloud Platform so you don’t YOLO infra.
 
-### Create a New Project
+---
+
+## 🚀 Quick Start (Let’s fucking go)
 
 ```bash
 npx create-ej-app@latest
 ```
 
-The CLI will prompt you for:
+You’ll be prompted for:
 
-- **Project Name**: Name of your project (default: `my-app`)
-- **Description**: Brief description of your project
-- **Template**: Choose from available templates (currently: `base`)
-- **Git**: Initialize a git repository (yes/no)
+- Project name
+- Description
+- Template
+- Git init (because not using git in 2026 is wild)
 
-### Example
+Example:
 
 ```bash
-npx create-ej-app@latest
-
-# Follow the prompts:
-# ? Enter the project name: awesome-app
-# ? Enter a description for the project: My awesome Next.js application
-# ? Select a template: base
-# ? Initialize a git repository? yes
+? Enter the project name: badass-app
+? Enter a description: My savage Next.js monster
+? Select a template: base
+? Initialize a git repository? yes
 ```
 
-## 📦 What's Included
+Boom. Done.
 
-### Tech Stack
+---
+
+## 📦 What You Actually Get
+
+### Tech Stack (The real weapons)
 
 - **Framework**: Next.js
-- **Runtime**: Bun (optimized for performance)
-- **Backend APIs**: Elysia (Bun-first web framework)
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Better Auth
-- **Background Jobs**: Workflow DevKit (durable execution with automatic retries)
-- **UI Library**: shadcn/ui with Radix UI primitives
+- **Runtime**: Bun (fast as shit)
+- **Backend**: Elysia APIs
+- **Database**: PostgreSQL + Drizzle
+- **Auth**: Better Auth
+- **Background Jobs**: Workflow
+- **UI**: shadcn/ui
 - **Styling**: TailwindCSS
-- **Type Safety**: TypeScript + Zod
-- **Forms**: react-hook-form + @hookform/resolvers
-- **State Management**: TanStack Query
-- **Icons**: Lucide React
-- **Theme**: next-themes (dark mode support)
+- **State**: TanStack Query
+- **Forms**: react-hook-form + Zod
+- **Theme**: Dark mode out of the box
 
-### Project Structure
+---
 
-```
-my-app/
-├── src/
-│   ├── app/
-│   │   ├── (admin)/          # Admin dashboard routes
-│   │   ├── (app)/            # Main application routes
-│   │   ├── (auth)/           # Authentication pages
-│   │   ├── (marketing)/      # Public marketing pages
-│   │   └── api/              # API routes (Better Auth)
-│   ├── components/
-│   │   └── ui/               # shadcn/ui components
-│   ├── db/
-│   │   ├── index.ts          # Database connection
-│   │   └── schema.ts         # Drizzle schema
-│   └── lib/
-│       ├── auth.ts           # Better Auth configuration
-│       ├── auth-client.ts    # Client-side auth utilities
-│       └── siteConfig.ts     # Site metadata
-├── terraform/                 # Infrastructure as Code
-├── Dockerfile                # Production Docker build
-└── drizzle.config.ts         # Drizzle ORM configuration
-```
-
-## 🛠️ Setup & Development
+## 🛠 Setup & Development
 
 ### Prerequisites
 
-- Node.js 24+ or Bun
-- PostgreSQL database
-- OAuth credentials (optional, for GitHub/Google login)
+- Node 24+ or Bun
+- PostgreSQL running
+- OAuth creds if you want GitHub/Google login
 
-### Installation
+### Install
 
 ```bash
 cd my-app
-
-# Install dependencies
-npm install
-# or
-pnpm install
-# or
-yarn install
-# or
 bun install
+# or npm / pnpm / yarn if that’s your thing
 ```
+
+---
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` → `.env` and fill your secrets like a responsible adult.
 
 ```env
-APP_ENV="development"
 DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
-BETTER_AUTH_URL="http://localhost:3000"
-BETTER_AUTH_SECRET="your-secret-key"
-
-# OAuth Providers (optional)
-BETTER_AUTH_GITHUB_ID="your-github-client-id"
-BETTER_AUTH_GITHUB_SECRET="your-github-client-secret"
-BETTER_AUTH_GOOGLE_ID="your-google-client-id"
-BETTER_AUTH_GOOGLE_SECRET="your-google-client-secret"
-
-# Email Configuration
-EMAIL_SERVER_USER="smtp-username"
-EMAIL_SERVER_PASSWORD="smtp-password"
-EMAIL_SERVER_HOST="smtp.example.com"
-EMAIL_SERVER_PORT="465"
-EMAIL_FROM="no-reply@example.com"
+BETTER_AUTH_SECRET="super-secret-shit"
 ```
 
-### Database Setup
+Don’t commit this crap. Seriously.
+
+---
+
+## 🗄 Database
+
+Push schema:
 
 ```bash
-# Push schema to database
 npm run db:push
+```
 
-# Open Drizzle Studio
+Open Drizzle Studio:
+
+```bash
 npm run db:studio
 ```
 
-### Development
+No migrations? No tears. Just push and move on.
+
+---
+
+## 💻 Development
 
 ```bash
 npm run dev
-# or
-pnpm dev
-# or
-yarn dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open `http://localhost:3000` and admire your badass setup.
 
-## 📝 Available Scripts
+---
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript compiler check
-- `npm run format` - Format code with Prettier
-- `npm run db:push` - Push database schema changes
-- `npm run db:studio` - Open Drizzle Studio
-- `npm run gen:auth` - Generate Better Auth types
-- `npm run build:docker` - Build Docker image
-- `npm run analyze` - Analyze bundle size
+## 🐳 Docker (Ship it like a pro)
+
+```bash
+docker build -t my-app .
+docker run -p 3000:3000 my-app
+```
+
+No “works on my machine” bullshit anymore.
+
+---
+
+## ☁️ Infrastructure (The Cloud Shit)
+
+Terraform config included for:
+
+- Cloud Run
+- Cloud SQL
+- Artifact Registry
+- Cloud Build
+- Secret Manager
+- Load Balancer
+- VPC
+
+Deploy it:
+
+```bash
+cd terraform
+terraform init
+terraform apply
+```
+
+And now you’re running production infra like a grown-ass engineer.
+
+---
 
 ## 🔐 Authentication
 
-The base template includes Better Auth with multiple authentication methods:
+Better Auth gives you:
 
-### Email/Password Login
+- Email/Password login
+- Magic links (no password drama)
+- OAuth (GitHub, Google)
+- Admin panel
+- User impersonation
 
-Users can register and login with email and password.
+Secure, extensible, no duct-taped auth spaghetti.
 
-### Magic Link
-
-Passwordless authentication via email magic links.
-
-### OAuth Providers
-
-Pre-configured for:
-
-- GitHub
-- Google
-
-### Admin Features
-
-Built-in admin plugin for user management and impersonation.
+---
 
 ## 🎨 UI Components
 
-The project uses shadcn/ui with pre-installed components:
+Preinstalled:
 
 - Button
 - Card
 - Form
 - Input
-- Label
-- Separator
-- Sonner (Toast notifications)
+- Toast notifications
 
-Add more components:
+Need more?
 
 ```bash
 npx shadcn@latest add [component-name]
 ```
 
-## 🐳 Docker Deployment
+Ship beautiful shit without reinventing buttons for the 900th time.
 
-Build and run with Docker:
-
-```bash
-# Build image
-docker build -t my-app .
-
-# Run container
-docker run -p 3000:3000 my-app
-```
-
-## ☁️ Infrastructure (Terraform)
-
-The template includes Terraform configuration for Google Cloud Platform deployment:
-
-- Cloud Run service
-- Cloud SQL (PostgreSQL)
-- Artifact Registry
-- Load Balancer with SSL
-- VPC network configuration
-- Cloud Build for CI/CD
-- Secret Manager
-
-Deploy to GCP:
-
-```bash
-cd terraform
-./setup.sh
-terraform init
-terraform plan
-terraform apply
-```
+---
 
 ## 🎯 Route Groups
 
-The app uses Next.js route groups for layout organization:
+Organized like a sane human:
 
-- **(admin)** - Admin dashboard (requires admin role)
-- **(app)** - Main application (requires authentication)
-- **(auth)** - Login, signup pages (public)
-- **(marketing)** - Landing page, privacy, terms (public)
+- `(admin)` – Admin dashboard
+- `(app)` – Main app (auth required)
+- `(auth)` – Login/signup
+- `(marketing)` – Public pages
+
+No messy folder hell.
+
+---
 
 ## 🔧 Customization
 
-### Site Configuration
+Edit:
 
-Edit `src/lib/siteConfig.ts`:
+- `siteConfig.ts` – change name/description
+- `schema.ts` – change DB schema
+- `auth.ts` – tweak providers
 
-```typescript
-export const siteConfig = {
-  name: 'Your App Name',
-  description: 'Your app description'
-}
-```
+Then push schema and move on with your life.
 
-### Database Schema
-
-Modify `src/db/schema.ts` and run:
-
-```bash
-npm run db:push
-```
-
-### Authentication Configuration
-
-Customize `src/lib/auth.ts` to add/remove providers or configure auth behavior.
-
-## 📚 Package Manager Support
-
-The CLI automatically detects your package manager:
-
-- npm
-- pnpm
-- yarn
-- bun
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+PRs welcome. Don’t submit half-broken shit.
+
+---
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT. Do whatever the hell you want, just don’t blame us if you screw it up.
+
+---
 
 ## 🔗 Links
 
-- [Repository](https://github.com/ejekanshjain/create-ej-app)
-- [Issues](https://github.com/ejekanshjain/create-ej-app/issues)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Better Auth Documentation](https://better-auth.com)
-- [Drizzle ORM Documentation](https://orm.drizzle.team)
-- [Elysia Documentation](https://elysiajs.com)
-- [Workflow DevKit Documentation](https://useworkflow.dev)
-- [shadcn/ui Documentation](https://ui.shadcn.com)
+- Repository: [https://github.com/ejekanshjain/create-ej-app](https://github.com/ejekanshjain/create-ej-app)
+- Issues: [https://github.com/ejekanshjain/create-ej-app/issues](https://github.com/ejekanshjain/create-ej-app/issues)
+- Docs:
+  - [Next.js](https://nextjs.org/docs)
+  - [Better Auth](https://better-auth.com)
+  - [Drizzle ORM](https://orm.drizzle.team)
+  - [Elysia](https://elysiajs.com)
+  - [Workflow](https://useworkflow.dev)
+  - [shadcn/ui](https://ui.shadcn.com)
+
+---
+
+Now go build some badass production-ready shit instead of another half-baked side project. 🚀
