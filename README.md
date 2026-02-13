@@ -1,9 +1,9 @@
 # create-ej-app
 
-A no-bullshit CLI to bootstrap a production-ready **fucking beast** of a app with Next.js, Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, and deployment wired up so you don’t screw your shit up in production.
+A no-bullshit CLI to bootstrap a production-ready **fucking beast** of a app with Next.js, Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, React Email, and deployment wired up so you don’t screw your shit up in production.
 
 ```bash
-npx create-ej-app@latest
+bunx create-ej-app@latest
 ```
 
 ---
@@ -21,11 +21,12 @@ npx create-ej-app@latest
 - **Drizzle ORM** – Type-safe SQL over PostgreSQL without the usual ORM garbage.
 - **Elysia** – Built for Bun. Minimal, fast, no nonsense.
 - **Workflow** – Durable jobs so your background tasks don’t randomly die like weak shit.
+- **React Email** – Build transactional emails using React components instead of ugly HTML nightmares.
 - **shadcn/ui** – Clean, accessible components built on Radix UI.
-- **TailwindCSS 4** – Utility-first styling with zero CSS drama. TailwindCSS
-- **TypeScript** – Strict types so you don’t ship dumb bugs. TypeScript
-- **TanStack Query** – Server state that doesn’t implode. TanStack Query
-- **Lucide React** – Icons that don’t look like 2009 garbage. Lucide React
+- **TailwindCSS 4** – Utility-first styling with zero CSS drama.
+- **TypeScript** – Strict types so you don’t ship dumb bugs.
+- **TanStack Query** – Server state that doesn’t implode.
+- **Lucide React** – Icons that don’t look like 2009 garbage.
 - **Docker + Terraform** – Ship this shit properly.
 - Terraform setup for Google Cloud Platform so you don’t YOLO infra.
 
@@ -34,7 +35,7 @@ npx create-ej-app@latest
 ## 🚀 Quick Start (Let’s fucking go)
 
 ```bash
-npx create-ej-app@latest
+bunx create-ej-app@latest
 ```
 
 You’ll be prompted for:
@@ -66,6 +67,7 @@ Boom. Done.
 - **Backend**: Elysia APIs
 - **Database**: PostgreSQL + Drizzle
 - **Auth**: Better Auth
+- **Emails**: React Email (transactional + auth templates ready)
 - **Background Jobs**: Workflow
 - **UI**: shadcn/ui
 - **Styling**: TailwindCSS
@@ -82,6 +84,7 @@ Boom. Done.
 - Node 24+ or Bun
 - PostgreSQL running
 - OAuth creds if you want GitHub/Google login
+- Email provider (Resend, SES, Postmark, etc.)
 
 ### Install
 
@@ -97,37 +100,14 @@ bun install
 
 Copy `.env.example` → `.env` and fill your secrets like a responsible adult.
 
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
-BETTER_AUTH_SECRET="super-secret-shit"
-```
-
 Don’t commit this crap. Seriously.
-
----
-
-## 🗄 Database
-
-Push schema:
-
-```bash
-npm run db:push
-```
-
-Open Drizzle Studio:
-
-```bash
-npm run db:studio
-```
-
-No migrations? No tears. Just push and move on.
 
 ---
 
 ## 💻 Development
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Open `http://localhost:3000` and admire your badass setup.
@@ -196,7 +176,7 @@ Preinstalled:
 Need more?
 
 ```bash
-npx shadcn@latest add [component-name]
+bunx shadcn@latest add [component-name]
 ```
 
 Ship beautiful shit without reinventing buttons for the 900th time.
@@ -251,6 +231,7 @@ MIT. Do whatever the hell you want, just don’t blame us if you screw it up.
   - [Elysia](https://elysiajs.com)
   - [Workflow](https://useworkflow.dev)
   - [shadcn/ui](https://ui.shadcn.com)
+  - [React Email](https://react.email)
 
 ---
 
