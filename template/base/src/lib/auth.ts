@@ -10,6 +10,7 @@ import {
 } from 'better-auth/plugins'
 import { headers } from 'next/headers'
 import { cache } from 'react'
+import { start } from 'workflow/api'
 import { db } from '~/db'
 import {
   accountsTable,
@@ -18,6 +19,8 @@ import {
   verificationsTable
 } from '~/db/schema'
 import { env } from '~/env'
+import { sendMagicLinkEmail, sendWelcomeEmail } from './email-service'
+import { siteConfig } from './siteConfig'
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -51,14 +54,39 @@ export const auth = betterAuth({
       clientSecret: env.BETTER_AUTH_GOOGLE_SECRET
     }
   },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async user => {
+          try {
+            await start(sendWelcomeEmail, [
+              user.email,
+              {
+                userName: user.name,
+                companyName: siteConfig.name
+              }
+            ])
+          } catch (error) {
+            console.error('Failed to send welcome email:', error)
+          }
+        }
+      }
+    }
+  },
   plugins: [
     magicLink({
-      sendMagicLink: async ({ email, token, url }) => {
-        console.warn('TODO: send email', {
-          email,
-          token,
-          url
-        })
+      sendMagicLink: async ({ email, url }) => {
+        try {
+          await start(sendMagicLinkEmail, [
+            email,
+            {
+              magicLink: url,
+              companyName: siteConfig.name
+            }
+          ])
+        } catch (error) {
+          console.error('Failed to send magic link email:', error)
+        }
       }
     }),
     admin(),
@@ -66,10 +94,7 @@ export const auth = betterAuth({
   ],
   hooks: {
     before: createAuthMiddleware(async ctx => {
-      if (
-        ctx.path === '/sign-in/magic-link' &&
-        ctx.body?.email
-      ) {
+      if (ctx.path === '/sign-in/magic-link' && ctx.body?.email) {
         try {
           const validation = await validateEmail({
             email: ctx.body.email
