@@ -1,7 +1,13 @@
+'use client'
+
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Button } from '~/components/ui/button'
+import { usePathname } from 'next/navigation'
 
 export default function NotFound() {
+  const pathname = usePathname()
+  const homeRoute = pathname?.startsWith('/admin') ? '/admin' : '/'
+
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
       <section className="flex min-h-[60vh] flex-col items-center justify-center px-4">
@@ -12,7 +18,7 @@ export default function NotFound() {
             The page you're looking for doesn't exist.
           </p>
           <Button asChild>
-            <Link href="/">Return to Home</Link>
+            <Link href={homeRoute}>Return to Home</Link>
           </Button>
         </div>
       </section>
