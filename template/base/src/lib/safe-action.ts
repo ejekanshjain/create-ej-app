@@ -1,9 +1,17 @@
 import { createSafeActionClient } from 'next-safe-action'
 import { getAuthSession } from './auth'
+import { recordWideEvent } from './otel'
 
 export const actionClient = createSafeActionClient().use(
   async ({ next, ctx }) => {
     const authSession = await getAuthSession()
+
+    if (authSession)
+      recordWideEvent({
+        'user.id': authSession.user.id,
+        'user.admin': authSession.isAdmin,
+        'session.id': authSession.session.id
+      })
 
     return next({
       ctx: {

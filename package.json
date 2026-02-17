@@ -1,6 +1,6 @@
 {
   "name": "create-ej-app",
-  "version": "16.0.0",
+  "version": "17.0.0",
   "description": "Bootstrap a next.js app with my preferred setup",
   "main": "cli.js",
   "scripts": {

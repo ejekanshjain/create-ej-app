@@ -1,6 +1,6 @@
 # create-ej-app
 
-A no-bullshit CLI to bootstrap a production-ready **fucking beast** of a app with Next.js, Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, React Email, and deployment wired up so you don’t screw your shit up in production.
+A no-bullshit CLI to bootstrap a production-ready **fucking beast** of a app with Next.js, Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, React Email, OTEL, and deployment wired up so you don’t screw your shit up in production.
 
 ```bash
 bunx create-ej-app@latest
@@ -11,6 +11,7 @@ bunx create-ej-app@latest
 ## ✨ Features (aka the good shit)
 
 - **Next.js 16** – Powered by React 19, Server Components, App Router. Fast as hell.
+
 - **Better Auth** – Auth that doesn’t suck:
   - Email/Password
   - Magic link (because passwords are annoying as fuck)
@@ -19,15 +20,31 @@ bunx create-ej-app@latest
   - Admin powers
 
 - **Drizzle ORM** – Type-safe SQL over PostgreSQL without the usual ORM garbage.
+
 - **Elysia** – Built for Bun. Minimal, fast, no nonsense.
+
 - **Workflow** – Durable jobs so your background tasks don’t randomly die like weak shit.
+
 - **React Email** – Build transactional emails using React components instead of ugly HTML nightmares.
+
+- **OTEL (OpenTelemetry)** – Production-grade observability:
+  - Distributed tracing
+  - Metrics
+  - Structured logs
+  - Works with GCP, Datadog, Honeycomb, Grafana, etc.
+
 - **shadcn/ui** – Clean, accessible components built on Radix UI.
+
 - **TailwindCSS 4** – Utility-first styling with zero CSS drama.
+
 - **TypeScript** – Strict types so you don’t ship dumb bugs.
+
 - **TanStack Query** – Server state that doesn’t implode.
+
 - **Lucide React** – Icons that don’t look like 2009 garbage.
+
 - **Docker + Terraform** – Ship this shit properly.
+
 - Terraform setup for Google Cloud Platform so you don’t YOLO infra.
 
 ---
@@ -68,6 +85,7 @@ Boom. Done.
 - **Database**: PostgreSQL + Drizzle
 - **Auth**: Better Auth
 - **Emails**: React Email (transactional + auth templates ready)
+- **Observability**: OpenTelemetry
 - **Background Jobs**: Workflow
 - **UI**: shadcn/ui
 - **Styling**: TailwindCSS
@@ -232,6 +250,7 @@ MIT. Do whatever the hell you want, just don’t blame us if you screw it up.
   - [Workflow](https://useworkflow.dev)
   - [shadcn/ui](https://ui.shadcn.com)
   - [React Email](https://react.email)
+  - [Logging](https://loggingsucks.com)
 
 ---
 
