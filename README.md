@@ -67,7 +67,7 @@ Example:
 ```bash
 ? Enter the project name: badass-app
 ? Enter a description: My savage Next.js monster
-? Select a template: base
+? Select a template: nextjs
 ? Initialize a git repository? yes
 ```
 

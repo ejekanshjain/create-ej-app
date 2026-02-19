@@ -73,8 +73,9 @@ program.action(async () => {
       message: 'Select a template:',
       choices: [
         {
-          name: 'base',
-          message: 'Base setup with Next 16, Better Auth, shadcn and Drizzle'
+          name: 'nextjs',
+          message:
+            'Full Stack setup with Next 16, Better Auth, shadcn and Drizzle'
         }
       ]
     },
