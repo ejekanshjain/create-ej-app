@@ -59,13 +59,13 @@ program.action(async () => {
       type: 'input',
       name: 'projectName',
       message: 'Enter the project name:',
-      initial: 'my-app'
+      initial: 'my-project'
     },
     {
       type: 'input',
       name: 'description',
       message: 'Enter a description for the project:',
-      initial: 'A Legendary Next.js App'
+      initial: 'A Legendary Project'
     },
     {
       type: 'select',
@@ -76,6 +76,10 @@ program.action(async () => {
           name: 'nextjs',
           message:
             'Full Stack setup with Next 16, Better Auth, shadcn and Drizzle'
+        },
+        {
+          name: 'api',
+          message: 'API Server setup with Elysia, Drizzle, Typescript'
         }
       ]
     },
@@ -107,36 +111,49 @@ program.action(async () => {
   packageJson.description = description
   fs.writeFileSync(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
-  const siteConfigFile = path.join(projectDir, 'src', 'lib', 'siteConfig.ts')
-  let siteConfig = fs.readFileSync(siteConfigFile, 'utf-8')
-  siteConfig = siteConfig.replace('Project Name', projectName)
-  siteConfig = siteConfig.replace('Project Description', description)
-  fs.writeFileSync(siteConfigFile, siteConfig)
-
   const envExampleFile = path.join(projectDir, '.env.example')
   const envExample = fs.readFileSync(envExampleFile, 'utf-8')
   fs.writeFileSync(path.join(projectDir, '.env'), envExample)
 
-  fs.writeFileSync(
-    path.join(projectDir, '.gitignore'),
-    `node_modules
-.next
-out
-build
-next-env.d.ts
+  if (template === 'nextjs') {
+    const siteConfigFile = path.join(projectDir, 'src', 'lib', 'siteConfig.ts')
+    let siteConfig = fs.readFileSync(siteConfigFile, 'utf-8')
+    siteConfig = siteConfig.replace('Project Name', projectName)
+    siteConfig = siteConfig.replace('Project Description', description)
+    fs.writeFileSync(siteConfigFile, siteConfig)
+
+    fs.writeFileSync(
+      path.join(projectDir, '.gitignore'),
+      `node_modules
+  .next
+  out
+  build
+  next-env.d.ts
+  .DS_Store
+  .env
+`
+    )
+
+    fs.writeFileSync(
+      path.join(projectDir, 'terraform', '.gitignore'),
+      `.terraform
+  *.tfstate
+  *.tfstate.*
+  .terraform.lock.hcl
+`
+    )
+  }
+
+  if (template === 'api') {
+    fs.writeFileSync(
+      path.join(projectDir, '.gitignore'),
+      `node_modules
 .DS_Store
 .env
+server
 `
-  )
-
-  fs.writeFileSync(
-    path.join(projectDir, 'terraform', '.gitignore'),
-    `.terraform
-*.tfstate
-*.tfstate.*
-.terraform.lock.hcl
-`
-  )
+    )
+  }
 
   fs.writeFileSync(
     path.join(projectDir, 'README.md'),

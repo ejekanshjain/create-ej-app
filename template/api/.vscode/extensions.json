@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode",
+    "TypeScriptTeam.native-preview",
+    "usernamehw.errorlens",
+    "YoavBls.pretty-ts-errors"
+  ]
+}
