@@ -2,12 +2,8 @@ import { validateEmail } from '@ejekanshjain/simple-email-validator'
 import { createId } from '@paralleldrive/cuid2'
 import { APIError, betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import {
-  admin,
-  createAuthMiddleware,
-  lastLoginMethod,
-  magicLink
-} from 'better-auth/plugins'
+import { createAuthMiddleware } from 'better-auth/api'
+import { admin, lastLoginMethod, magicLink } from 'better-auth/plugins'
 import { headers } from 'next/headers'
 import { cache } from 'react'
 import { start } from 'workflow/api'
