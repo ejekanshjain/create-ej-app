@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import { ThemeProvider } from '~/components/theme-provider'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Loader } from '~/components/loader'
 import { ReactQueryProvider } from '~/components/react-query-provider'
 import { ScreenSize } from '~/components/screen-size'
+import { ThemeProvider } from '~/components/theme-provider'
 import { Toaster } from '~/components/ui/sonner'
 import { env } from '~/env'
 import { siteConfig } from '~/lib/siteConfig'
@@ -30,7 +30,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
       <body>
         <ReactQueryProvider>
           <ThemeProvider>

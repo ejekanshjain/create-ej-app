@@ -27,5 +27,5 @@ export const commonFieldDefs = {
       .$onUpdate(() => sql`NOW()`)
       .defaultNow()
   },
-  isActive: boolean('is_active').notNull().default(true),
+  isActive: boolean('is_active').notNull().default(true)
 }

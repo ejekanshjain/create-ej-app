@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode",
+    "TypeScriptTeam.native-preview",
+    "usernamehw.errorlens",
+    "YoavBls.pretty-ts-errors"
+  ]
+}

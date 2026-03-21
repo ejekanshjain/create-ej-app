@@ -22,7 +22,6 @@ async function sendTestMail() {
   })
 
   console.info('Test email sent successfully', result)
-
 }
 
 if (import.meta.main) {

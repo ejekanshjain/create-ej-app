@@ -50,7 +50,6 @@ function ThemeHotkey() {
   return null
 }
 
-
 export const ThemeProvider: FC<{
   children: React.ReactNode
 }> = ({ children }) => {

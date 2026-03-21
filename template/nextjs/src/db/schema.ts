@@ -1,4 +1,4 @@
-import { boolean, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { boolean, pgTable, text } from 'drizzle-orm/pg-core'
 import { commonFieldDefs } from './common'
 
 export const usersTable = pgTable('users', {
