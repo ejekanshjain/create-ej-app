@@ -1,31 +1,5 @@
-import { createId } from '@paralleldrive/cuid2'
 import { boolean, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
-
-const commonFieldDefs = {
-  id: (prefix: string) =>
-    varchar('id')
-      .primaryKey()
-      .$defaultFn(() => prefix + '_' + createId()),
-  date: (name: string) =>
-    timestamp(name, {
-      mode: 'date',
-      withTimezone: true
-    }),
-  dates: {
-    createdAt: timestamp('created_at', {
-      mode: 'date',
-      withTimezone: true
-    })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', {
-      mode: 'date',
-      withTimezone: true
-    })
-      .notNull()
-      .defaultNow()
-  }
-}
+import { commonFieldDefs } from './common'
 
 export const usersTable = pgTable('users', {
   id: commonFieldDefs.id('user'),
