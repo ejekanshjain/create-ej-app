@@ -9,7 +9,7 @@ export default async function Layout({
   const authSession = await getAuthSession()
 
   if (!authSession) {
-    redirect('/login')
+    return redirect('/login')
   }
 
   return (

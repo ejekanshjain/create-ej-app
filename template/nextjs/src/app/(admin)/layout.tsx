@@ -9,11 +9,11 @@ export default async function Layout({
   const authSession = await getAuthSession()
 
   if (!authSession?.isAdmin) {
-    notFound()
+    return notFound()
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col space-y-4">
       <main className="flex-1">{children}</main>
     </div>
   )
