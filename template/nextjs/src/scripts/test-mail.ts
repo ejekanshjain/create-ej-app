@@ -2,10 +2,10 @@ import { render, toPlainText } from '@react-email/render'
 import TestEmail from '~/emails/test'
 import { sendEmail } from '~/lib/nodemailer'
 
-async function main() {
+async function sendTestMail() {
   const html = await render(
     TestEmail({
-      name: 'Ekansh Jain'
+      name: 'John Doe'
     }),
     {
       pretty: true
@@ -23,7 +23,14 @@ async function main() {
 
   console.info('Test email sent successfully', result)
 
-  process.exit()
 }
 
-main()
+if (import.meta.main) {
+  try {
+    await sendTestMail()
+  } catch (err) {
+    console.error('Error sending test mail:', err)
+  } finally {
+    process.exit(0)
+  }
+}

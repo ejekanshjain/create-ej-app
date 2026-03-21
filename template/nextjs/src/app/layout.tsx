@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { ThemeProvider } from 'next-themes'
+import { ThemeProvider } from '~/components/theme-provider'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Loader } from '~/components/loader'
 import { ReactQueryProvider } from '~/components/react-query-provider'

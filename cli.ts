@@ -5,8 +5,6 @@ import { program } from 'commander'
 import { prompt } from 'enquirer'
 import fs from 'fs'
 import path from 'path'
-//@ts-ignore
-import copydir from 'copy-dir'
 
 interface Response {
   projectName: string
@@ -103,7 +101,7 @@ program.action(async () => {
   fs.mkdirSync(projectDir)
 
   const templateDir = path.join(__dirname, 'template', template)
-  copydir.sync(templateDir, projectDir)
+  fs.cpSync(templateDir, projectDir, { recursive: true })
 
   const packageJsonFile = path.join(projectDir, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonFile, 'utf-8'))
