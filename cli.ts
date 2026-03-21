@@ -113,46 +113,6 @@ program.action(async () => {
   const envExample = fs.readFileSync(envExampleFile, 'utf-8')
   fs.writeFileSync(path.join(projectDir, '.env'), envExample)
 
-  if (template === 'nextjs') {
-    const siteConfigFile = path.join(projectDir, 'src', 'lib', 'siteConfig.ts')
-    let siteConfig = fs.readFileSync(siteConfigFile, 'utf-8')
-    siteConfig = siteConfig.replace('Project Name', projectName)
-    siteConfig = siteConfig.replace('Project Description', description)
-    fs.writeFileSync(siteConfigFile, siteConfig)
-
-    fs.writeFileSync(
-      path.join(projectDir, '.gitignore'),
-      `node_modules
-  .next
-  out
-  build
-  next-env.d.ts
-  .DS_Store
-  .env
-`
-    )
-
-    fs.writeFileSync(
-      path.join(projectDir, 'terraform', '.gitignore'),
-      `.terraform
-  *.tfstate
-  *.tfstate.*
-  .terraform.lock.hcl
-`
-    )
-  }
-
-  if (template === 'api') {
-    fs.writeFileSync(
-      path.join(projectDir, '.gitignore'),
-      `node_modules
-.DS_Store
-.env
-server
-`
-    )
-  }
-
   fs.writeFileSync(
     path.join(projectDir, 'README.md'),
     `# ${projectName}
