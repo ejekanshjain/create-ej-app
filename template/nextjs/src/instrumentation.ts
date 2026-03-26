@@ -20,7 +20,7 @@ class SmartSamplingSpanProcessor extends SimpleSpanProcessor {
 
 export function register() {
   registerOTel({
-    serviceName: 'tdc-ai',
+    serviceName: 'my-nextjs-app',
     spanProcessors: [new SmartSamplingSpanProcessor(new ConsoleSpanExporter())]
   })
 }
