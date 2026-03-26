@@ -1,6 +1,6 @@
 {
   "name": "create-ej-app",
-  "version": "19.0.0",
+  "version": "20.0.0",
   "description": "Bootstrap a next.js app with my preferred setup",
   "main": "cli.js",
   "scripts": {
@@ -35,6 +35,6 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   }
 }
