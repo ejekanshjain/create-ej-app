@@ -1,6 +1,6 @@
 {
   "name": "create-ej-app",
-  "version": "21.0.0",
+  "version": "22.0.0",
   "description": "Bootstrap a next.js app with my preferred setup",
   "main": "cli.js",
   "scripts": {
@@ -14,10 +14,11 @@
     "create-ej-app",
     "nextjs",
     "typescript",
-    "nextauth",
-    "prisma",
+    "better-auth",
+    "drizzle",
     "tailwind",
-    "shadcn"
+    "shadcn",
+    "starter"
   ],
   "author": "Ekansh Jain",
   "license": "MIT",
@@ -34,7 +35,7 @@
     "enquirer": "^2.4.1"
   },
   "devDependencies": {
-    "@types/node": "^25.6.2",
+    "@types/node": "^25.9.0",
     "typescript": "^6.0.3"
   }
 }
