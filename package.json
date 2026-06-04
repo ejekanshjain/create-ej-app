@@ -3,6 +3,7 @@
   "version": "24.0.0",
   "description": "Bootstrap a next.js app with my preferred setup",
   "main": "cli.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node ."

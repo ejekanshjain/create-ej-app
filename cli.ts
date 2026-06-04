@@ -2,7 +2,7 @@
 
 import { execSync } from 'child_process'
 import { program } from 'commander'
-import { prompt } from 'enquirer'
+import enquirer from 'enquirer'
 import fs from 'fs'
 import path from 'path'
 
@@ -52,7 +52,7 @@ const getDevCommand = (packageManager: string) => {
 }
 
 program.action(async () => {
-  const response: Response = await prompt([
+  const response: Response = await enquirer.prompt([
     {
       type: 'input',
       name: 'projectName',
