@@ -103,6 +103,18 @@ program.action(async () => {
   const templateDir = path.join(__dirname, 'template', template)
   fs.cpSync(templateDir, projectDir, { recursive: true })
 
+  const renameGitignore = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        renameGitignore(fullPath)
+      } else if (entry.name === 'gitignore') {
+        fs.renameSync(fullPath, path.join(dir, '.gitignore'))
+      }
+    }
+  }
+  renameGitignore(projectDir)
+
   const packageJsonFile = path.join(projectDir, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonFile, 'utf-8'))
   packageJson.name = projectName
