@@ -3,6 +3,5 @@ node_modules
 out
 build
 next-env.d.ts
-.swc
 .DS_Store
 .env
