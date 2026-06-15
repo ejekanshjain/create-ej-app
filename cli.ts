@@ -79,6 +79,11 @@ program.action(async () => {
             'Full Stack setup with Next 16, Better Auth, shadcn and Drizzle'
         },
         {
+          name: 'saas-starter',
+          message:
+            'SaaS Starter with Stripe, Next 16, Better Auth, shadcn and Drizzle'
+        },
+        {
           name: 'api',
           message: 'API Server setup with Elysia, Drizzle, Typescript'
         }
