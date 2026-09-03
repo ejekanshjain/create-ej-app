@@ -19,7 +19,7 @@
     "db:seed": "bun ./src/scripts/seed.ts",
     "db:reset": "bun ./src/scripts/reset-db.ts",
     "db:studio": "drizzle-kit studio",
-    "gen:auth": "bunx @better-auth/cli generate",
+    "gen:auth": "bunx auth@latest generate",
     "stripe:setup": "bun ./src/scripts/setup-stripe-plans.ts",
     "stripe:dev": "stripe listen --forward-to localhost:3000/api/webhooks/stripe"
   },
