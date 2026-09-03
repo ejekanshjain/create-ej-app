@@ -1,6 +1,6 @@
 # create-ej-app
 
-A no-bullshit CLI to bootstrap production-ready **fucking beasts** of apps with Next.js, Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, React Email, OTEL, and deployment wired up so you don’t screw your shit up in production.
+CLI to bootstrap production-ready apps with Next.js, Better Auth, Drizzle ORM, Elysia, Workflow, shadcn/ui, React Email, OpenTelemetry, and deployment already wired up.
 
 ```bash
 bunx create-ej-app@latest
@@ -8,196 +8,166 @@ bunx create-ej-app@latest
 
 ---
 
-## ✨ Features (aka the good shit)
+## Features
 
-- **Next.js 16** – Powered by React 19, Server Components, App Router. Fast as hell.
-
-- **Better Auth** – Auth that doesn’t suck:
-  - Email/Password
-  - Magic link (because passwords are annoying as fuck)
-  - OAuth with GitHub and Google
+- **Next.js 16** — React 19, Server Components, App Router
+- **Better Auth**
+  - Email / password
+  - Magic link
+  - GitHub and Google OAuth
   - Account linking
-  - Admin powers
-
-- **Drizzle ORM** – Type-safe SQL over PostgreSQL without the usual ORM garbage.
-
-- **Elysia** – Built for Bun. Minimal, fast, no nonsense.
-
-- **Workflow** – Durable jobs so your background tasks don’t randomly die like weak shit.
-
-- **React Email** – Build transactional emails using React components instead of ugly HTML nightmares.
-
-- **OTEL (OpenTelemetry)** – Production-grade observability:
-  - Distributed tracing
-  - Metrics
-  - Structured logs
-  - Works with GCP, Datadog, Honeycomb, Grafana, etc.
-
-- **shadcn/ui** – Clean, accessible components built on Radix UI.
-
-- **TailwindCSS 4** – Utility-first styling with zero CSS drama.
-
-- **TypeScript** – Strict types so you don’t ship dumb bugs.
-
-- **TanStack Query** – Server state that doesn’t implode.
-
-- **Lucide React** – Icons that don’t look like 2009 garbage.
-
-- **Docker + Terraform** – Ship this shit properly.
-
-- Terraform setup for Google Cloud Platform so you don’t YOLO infra.
+  - Admin role
+- **Drizzle ORM** — type-safe SQL over PostgreSQL
+- **Elysia** — fast HTTP APIs on Bun
+- **Workflow** — durable background jobs
+- **React Email** — transactional emails as React components
+- **OpenTelemetry** — traces, metrics, and structured logs (GCP, Datadog, Honeycomb, Grafana)
+- **shadcn/ui** — accessible components on Radix UI
+- **Tailwind CSS 4**
+- **TypeScript** — strict mode
+- **TanStack Query**
+- **Lucide React**
+- **Docker + Terraform** — Cloud Run, Cloud SQL, and related GCP resources
 
 ---
 
-## 📋 Templates (Pick your poison)
+## Templates
 
-Choose your template based on what you’re building:
+### Next.js full-stack app
 
-### Next.js Full-Stack App
+Next.js 16, Better Auth, shadcn/ui, and Drizzle ORM. Use this for web apps that need auth, UI, and backend APIs.
 
-Full-stack setup with Next.js 16, Better Auth, shadcn/ui, and Drizzle ORM. Perfect for web apps that need auth, UI, and backend APIs.
+### API server
 
-### API Server
-
-Production-ready REST API built with Elysia on Bun, Drizzle ORM, PostgreSQL, and Zod validation. Perfect for headless APIs, microservices, internal tools, or that backend you actually want to scale without it exploding like fragile shit.
+REST API with Elysia on Bun, Drizzle ORM, PostgreSQL, and Zod validation. Use this for headless APIs, internal tools, and services.
 
 ---
 
-## 🚀 Quick Start (Let’s fucking go)
+## Quick start
 
 ```bash
 bunx create-ej-app@latest
 ```
 
-You’ll be prompted for:
+You will be prompted for:
 
 - Project name
 - Description
-- Template (nextjs or api)
-- Git init (because not using git in 2026 is wild)
+- Template (`nextjs` or `api`)
+- Whether to initialize git
 
 Example:
 
-```bash
-? Enter the project name: badass-app
-? Enter a description: My savage Next.js monster
+```text
+? Enter the project name: my-app
+? Enter a description: Production-ready Next.js app
 ? Select a template: nextjs
 ? Initialize a git repository? yes
 ```
 
-Boom. Done.
+---
+
+## What you get
+
+### Next.js full-stack template
+
+| Layer         | Stack                                          |
+| ------------- | ---------------------------------------------- |
+| Framework     | Next.js                                        |
+| Runtime       | Bun                                            |
+| Backend       | Elysia APIs                                    |
+| Database      | PostgreSQL + Drizzle                           |
+| Auth          | Better Auth                                    |
+| Email         | React Email (transactional and auth templates) |
+| Observability | OpenTelemetry                                  |
+| Jobs          | Workflow                                       |
+| UI            | shadcn/ui                                      |
+| Styling       | Tailwind CSS                                   |
+| Server state  | TanStack Query                                 |
+| Forms         | react-hook-form + Zod                          |
+| Theme         | Dark mode included                             |
+
+### API server template
+
+| Layer       | Stack                                      |
+| ----------- | ------------------------------------------ |
+| Runtime     | Bun                                        |
+| Framework   | Elysia                                     |
+| Database    | PostgreSQL + Drizzle ORM                   |
+| Validation  | Zod v4                                     |
+| API docs    | Auto-generated OpenAPI                     |
+| Containers  | Docker, distroless images                  |
+| Types       | TypeScript, strict mode                    |
+| Formatting  | Prettier                                   |
+| Environment | Validated env vars with `@t3-oss/env-core` |
 
 ---
 
-## 📦 What You Actually Get
-
-### Next.js Full-Stack Template
-
-**Tech Stack (The real weapons)**
-
-- **Framework**: Next.js
-- **Runtime**: Bun (fast as shit)
-- **Backend**: Elysia APIs
-- **Database**: PostgreSQL + Drizzle
-- **Auth**: Better Auth
-- **Emails**: React Email (transactional + auth templates ready)
-- **Observability**: OpenTelemetry
-- **Background Jobs**: Workflow
-- **UI**: shadcn/ui
-- **Styling**: TailwindCSS
-- **State**: TanStack Query
-- **Forms**: react-hook-form + Zod
-- **Theme**: Dark mode out of the box
-
-### API Server Template
-
-**Tech Stack (The real weapons)**
-
-- **Runtime**: Bun (blazing fast as fuck)
-- **Framework**: Elysia
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod v4
-- **API Docs**: Auto-generated OpenAPI docs
-- **Containerisation**: Docker with distroless images
-- **Type Checking**: TypeScript with strict mode
-- **Formatting**: Prettier
-- **Environment**: Validated env vars with @t3-oss/env-core
-
----
-
-## 🛠 Setup & Development
+## Setup
 
 ### Prerequisites
 
 - Node 24+ or Bun
-- PostgreSQL running
-- OAuth creds if you want GitHub/Google login (Next.js template)
-- Email provider (Resend, SES, Postmark, etc.) (Next.js template)
+- PostgreSQL
+- OAuth credentials for GitHub / Google (Next.js template)
+- An email provider such as Resend, SES, or Postmark (Next.js template)
 
 ### Install
 
 ```bash
 cd my-app
 bun install
-# or npm / pnpm / yarn if that’s your thing
 ```
 
----
+npm, pnpm, and yarn also work.
 
-### Environment Variables
+### Environment variables
 
-Copy `.env.example` → `.env` and fill your secrets like a responsible adult.
-
-Don’t commit this crap. Seriously.
+Copy `.env.example` to `.env` and fill in the values. Do not commit `.env`.
 
 ---
 
-## 💻 Development
+## Development
 
-### Next.js Template
+### Next.js template
 
 ```bash
 bun run dev
 ```
 
-Open `http://localhost:3000` and admire your badass setup.
+App: `http://localhost:3000`
 
-### API Template
+### API template
 
 ```bash
 bun run dev
 ```
 
-API runs on `http://localhost:3000`. OpenAPI docs at `http://localhost:3000/docs`.
-
-Fire it up, hit the endpoints, break things on purpose, and watch it handle your shit properly.
+API: `http://localhost:3000`
+OpenAPI docs: `http://localhost:3000/docs`
 
 ---
 
-## 🐳 Docker (Ship it like a pro)
+## Docker
 
 ```bash
 bun run build:docker
-docker run -p 3000:3000 my-awesome-project
+docker run -p 3000:3000 my-app
 ```
-
-No "works on my machine" bullshit anymore.
 
 ---
 
-## ☁️ Infrastructure (The Cloud Shit) - Next.js Template
+## Infrastructure (Next.js template)
 
-Terraform config included for:
+Terraform is included for:
 
 - Cloud Run
 - Cloud SQL
 - Artifact Registry
 - Cloud Build
 - Secret Manager
-- Load Balancer
+- Load balancer
 - VPC
-
-Deploy it:
 
 ```bash
 cd terraform
@@ -205,129 +175,91 @@ terraform init
 terraform apply
 ```
 
-And now you’re running production infra like a grown-ass engineer.
-
 ---
 
-## 🔐 Authentication - Next.js Template
+## Authentication (Next.js template)
 
-Better Auth gives you:
+Better Auth is set up with:
 
-- Email/Password login
-- Magic links (no password drama)
-- OAuth (GitHub, Google)
+- Email / password
+- Magic links
+- GitHub and Google OAuth
 - Admin panel
 - User impersonation
 
-Secure, extensible, no duct-taped auth spaghetti.
-
 ---
 
-## 🎨 UI Components - Next.js Template
+## UI (Next.js template)
 
-Preinstalled:
+Preinstalled components:
 
 - Button
 - Card
 - Form
 - Input
-- Toast notifications
+- Toast
 
-Need more?
+Add more with:
 
 ```bash
 bunx shadcn@latest add [component-name]
 ```
 
-Ship beautiful shit without reinventing buttons for the 900th time.
+---
+
+## Route groups (Next.js template)
+
+- `(admin)` — admin dashboard
+- `(app)` — authenticated app
+- `(auth)` — login and signup
+- `(marketing)` — public pages
 
 ---
 
-## 🎯 Route Groups - Next.js Template
+## Customization
 
-Organized like a sane human:
+### Next.js template
 
-- `(admin)` – Admin dashboard
-- `(app)` – Main app (auth required)
-- `(auth)` – Login/signup
-- `(marketing)` – Public pages
+- `siteConfig.ts` — name and description
+- `schema.ts` — database schema
+- `auth.ts` — auth providers
 
-No messy folder hell.
+### API template
 
----
+- `src/db/schema.ts` — schema
+- `src/routes/` — endpoints
+- `src/env.ts` — environment variables
 
-## 🔧 Customization
-
-### Next.js Template
-
-Edit:
-
-- `siteConfig.ts` – change name/description
-- `schema.ts` – change DB schema
-- `auth.ts` – tweak providers
-
-Then push schema and move on with your life.
-
-### API Template
-
-Edit:
-
-- `src/db/schema.ts` – change DB schema and model your data like a boss
-- `src/routes/` – add new API endpoints and wire your logic properly
-- `src/env.ts` – add new env vars and validate that shit
-
-Push schema with `bun run db:push` and type-check with `bun run type-check`.
+Push the schema with `bun run db:push`. Type-check with `bun run type-check`.
 
 ---
 
-## 🏗️ API Template Architecture
+## API template architecture
 
-Built with a clean layered architecture (no spaghetti garbage):
+- **Routes** (`src/routes/`) — HTTP, validation, call data-access
+- **Data-access** (`src/data-access/`) — database access per resource
+- **Database** (`src/db/`) — Drizzle client, schemas, shared fields
+- **Library** (`src/lib/`) — shared utilities and Zod schemas
 
-- **Routes** (`src/routes/`) – HTTP endpoints, validation, call data-access. Keep it sharp.
-- **Data-Access** (`src/data-access/`) – Direct DB interactions per resource. No random queries scattered like WTF.
-- **Database** (`src/db/`) – Drizzle client, schemas, reusable fields. Your source of truth.
-- **Library** (`src/lib/`) – Shared utilities and Zod schemas so you don’t duplicate crap everywhere.
+Includes a sample todos CRUD API with pagination, sorting, search, and OpenAPI docs.
 
-Includes a full CRUD API for todos with pagination, sorting, search, and OpenAPI docs so you can see your shit documented without extra effort.
+### API commands
 
-### API Commands
-
-- `bun run dev` – Start dev server with hot-reload
-- `bun run build` – Type-check and compile to native binary
-- `bun run type-check` – Run TypeScript checker
-- `bun run db:push` – Push schema to DB
-- `bun run db:studio` – Open Drizzle Studio
-- `bun run db:seed` – Seed database
-
----
-
-## 🤝 Contributing
-
-PRs welcome. Don’t submit half-broken shit.
+| Command              | Purpose                    |
+| -------------------- | -------------------------- |
+| `bun run dev`        | Dev server with hot reload |
+| `bun run build`      | Type-check and compile     |
+| `bun run type-check` | TypeScript check           |
+| `bun run db:push`    | Push schema                |
+| `bun run db:studio`  | Drizzle Studio             |
+| `bun run db:seed`    | Seed the database          |
 
 ---
 
-## 📄 License
+## Contributing
 
-MIT. Do whatever the hell you want, just don’t blame us if you screw it up.
+Pull requests are welcome. Please keep changes focused and working.
 
----
+## License
 
-## 🔗 Links
-
-- Repository: [https://github.com/ejekanshjain/create-ej-app](https://github.com/ejekanshjain/create-ej-app)
-- Issues: [https://github.com/ejekanshjain/create-ej-app/issues](https://github.com/ejekanshjain/create-ej-app/issues)
-- Docs:
-  - [Next.js](https://nextjs.org/docs)
-  - [Better Auth](https://better-auth.com)
-  - [Drizzle ORM](https://orm.drizzle.team)
-  - [Elysia](https://elysiajs.com)
-  - [Workflow](https://useworkflow.dev)
-  - [shadcn/ui](https://ui.shadcn.com)
-  - [React Email](https://react.email)
-  - [Logging](https://loggingsucks.com)
-
----
-
-Now go build some badass production-ready shit instead of another half-baked side project. 🚀
+MIT.
