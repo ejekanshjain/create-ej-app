@@ -27,7 +27,7 @@ bunx create-ej-app@latest
 - **TypeScript** — strict mode
 - **TanStack Query**
 - **Lucide React**
-- **Docker + Terraform** — Cloud Run, Cloud SQL, and related GCP resources
+- **Docker**
 
 ---
 
@@ -153,26 +153,6 @@ OpenAPI docs: `http://localhost:3000/docs`
 ```bash
 bun run build:docker
 docker run -p 3000:3000 my-app
-```
-
----
-
-## Infrastructure (Next.js template)
-
-Terraform is included for:
-
-- Cloud Run
-- Cloud SQL
-- Artifact Registry
-- Cloud Build
-- Secret Manager
-- Load balancer
-- VPC
-
-```bash
-cd terraform
-terraform init
-terraform apply
 ```
 
 ---
