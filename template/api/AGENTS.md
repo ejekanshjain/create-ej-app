@@ -1,5 +1,3 @@
-# Copilot Instructions
-
 ## Project Overview
 
 This project is a production-ready REST API built with **Elysia** on the **Bun** runtime. It uses **Drizzle ORM** with **PostgreSQL**, **Zod v4** for validation, and ships with auto-generated OpenAPI docs.
