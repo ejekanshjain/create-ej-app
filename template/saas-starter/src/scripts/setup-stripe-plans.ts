@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Creates the Stripe products, prices, and billing portal
+ * configuration for every paid plan in `~/lib/plans`.
+ *
+ * Existing prices are reused. New IDs are written to `stripe.txt`; copy them
+ * into `.env`, then delete the file.
+ */
 import { writeFile } from 'fs/promises'
 import type Stripe from 'stripe'
 import { env } from '~/env'
@@ -190,11 +197,10 @@ const setupPortalConfiguration = async (paidPlans: PaidPlanPrices[]) => {
 }
 
 if (import.meta.main) {
-  try {
-    await setupStripePlans()
-  } catch (err) {
-    console.error('Error setting up stripe plans:', err)
-  } finally {
-    process.exit(0)
-  }
+  setupStripePlans()
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error('Error setting up Stripe plans:', err)
+      process.exit(1)
+    })
 }

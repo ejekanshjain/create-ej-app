@@ -1,50 +1,36 @@
 import { Settings } from 'lucide-react'
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
+import {
+  getOrganizationCached,
+  getTransferTargets
+} from '~/app/(app)/actions/organizations'
 import { PageHeading } from '~/components/page-heading'
 import { Separator } from '~/components/ui/separator'
-import { canManageOrganization } from '~/lib/app-navigation'
-import {
-  getOrganizationMembers,
-  getUserMembershipCached,
-  getUserOrganizationsCached
-} from '~/lib/organization-access'
-import { resolveImageUrl } from '~/lib/storage'
 import { DangerZone } from './_components/danger-zone'
 import { GeneralSettingsForm } from './_components/general-settings-form'
 
-export default async function Page({
+export default async function GeneralSettingsPage({
   params
 }: {
   params: Promise<{ orgId: string }>
 }) {
   const { orgId } = await params
+  const org = (await getOrganizationCached(orgId))?.data
 
-  const membership = await getUserMembershipCached(orgId)
-  if (!membership || !canManageOrganization(membership.role)) {
-    return redirect(`/app/${orgId}/dashboard`)
-  }
-
-  const org = (await getUserOrganizationsCached()).find(o => o.id === orgId)
   if (!org) {
-    return redirect('/app')
+    return notFound()
   }
 
-  const members = await getOrganizationMembers(orgId)
-  const isOwner = membership.role === 'owner'
-  const transferTargets = members
-    .filter(m => m.id !== membership.id)
-    .map(m => ({
-      memberId: m.id,
-      name: m.user.name,
-      email: m.user.email,
-      role: m.role
-    }))
+  const isOwner = org.role === 'owner'
+  const transferTargets = isOwner
+    ? ((await getTransferTargets(orgId))?.data ?? [])
+    : []
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8">
       <PageHeading
         title="General"
-        description="Manage your organization's profile and settings."
+        description="Change your organization's name, link, and logo."
         icon={Settings}
       />
 
@@ -52,8 +38,8 @@ export default async function Page({
         orgId={orgId}
         defaultName={org.name}
         defaultSlug={org.slug}
-        currentLogoUrl={resolveImageUrl(org.logo)}
         currentLogoKey={org.logo}
+        currentLogoUrl={org.logoUrl}
       />
 
       <Separator />

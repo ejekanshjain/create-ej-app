@@ -4,7 +4,14 @@ import { withWorkflow } from 'workflow/next'
 import { env } from '~/env'
 
 const nextConfig: NextConfig = {
-  reactCompiler: true
+  reactCompiler: true,
+  devIndicators: false,
+  images: {
+    remotePatterns: [
+      { hostname: 'avatars.githubusercontent.com' },
+      { hostname: 'lh3.googleusercontent.com' }
+    ]
+  }
 }
 
 const withBundleAnalyzer = bundleAnalyzer({

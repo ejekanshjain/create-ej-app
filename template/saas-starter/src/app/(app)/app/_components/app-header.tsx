@@ -1,29 +1,31 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import { FC } from 'react'
 import { DashboardHeader } from '~/components/dashboard-header'
-import type { UserOrganization } from '~/lib/app-navigation'
 import { AppSearch } from './app-search'
+import { FeedbackDialog } from './feedback-dialog'
 
-export const AppHeader: FC<{
+export function AppHeader({
+  user,
+  organizations,
+  isSuperAdmin,
+  isImpersonating
+}: {
   user: {
     name?: string | null
     email?: string | null
     image?: string | null
   }
-  organizations: UserOrganization[]
-}> = ({ user, organizations }) => {
-  const params = useParams()
-  const orgId = params?.orgId as string | undefined
-  const role = organizations.find(o => o.id === orgId)?.role
-
+  organizations: { id: string; role: string }[]
+  isSuperAdmin: boolean
+  isImpersonating: boolean
+}) {
   return (
     <DashboardHeader
       user={user}
-      search={
-        orgId && role ? <AppSearch orgId={orgId} role={role} /> : undefined
-      }
+      isSuperAdmin={isSuperAdmin}
+      isImpersonating={isImpersonating}
+      search={<AppSearch organizations={organizations} />}
+      actions={<FeedbackDialog />}
     />
   )
 }

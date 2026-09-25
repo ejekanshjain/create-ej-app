@@ -2,13 +2,16 @@
 
 import { useParams } from 'next/navigation'
 import { NavigationSidebar } from '~/components/navigation-sidebar'
-import { getAppNavigation, type UserOrganization } from '~/lib/app-navigation'
-import { OrganizationSwitcher } from './organization-switcher'
+import { getAppNavigation } from '~/lib/app-navigation'
+import {
+  OrganizationSwitcher,
+  type SwitcherOrganization
+} from './organization-switcher'
 
 export function AppSidebar({
   organizations
 }: {
-  organizations: UserOrganization[]
+  organizations: (SwitcherOrganization & { role: string })[]
 }) {
   const params = useParams()
   const orgId = params?.orgId as string | undefined

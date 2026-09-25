@@ -1,6 +1,9 @@
+import 'server-only'
+
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { env } from '~/env'
+import * as relations from './relations'
 import * as schema from './schema'
 
 // In development, Next.js hot-reloading can re-evaluate modules frequently.
@@ -11,14 +14,21 @@ const globalForDb = globalThis as unknown as {
 }
 
 // Prefer the cached client (dev) and fall back to creating a new one.
-// `max: 1` limits the pool size, and `prepare: false` disables prepared
-// statements for compatibility with environments where prepared statements
-// can be problematic.
+// `prepare: false` disables prepared statements, which transaction-mode
+// poolers such as PgBouncer and Neon's pooler reject.
 const client =
   globalForDb.client ??
   postgres(env.DATABASE_URL, {
-    max: 1,
-    prepare: false
+    prepare: false,
+    // For neon.tech postgres db, as its serverless
+    ...(env.DATABASE_URL.includes('neon.tech')
+      ? {
+          max: 5,
+          idle_timeout: 30, // seconds an idle connection is kept before closing
+          max_lifetime: 60 * 5, // recycle a connection after 5 minutes
+          connect_timeout: 60 // seconds to wait for a connection (Neon cold start)
+        }
+      : {})
   })
 
 // Only cache the client outside production to avoid unexpected cross-request
@@ -43,7 +53,7 @@ if (env.APP_ENV !== 'production') globalForDb.client = client
  * })
  */
 export const db = drizzle(client, {
-  schema: { ...schema }
+  schema: { ...schema, ...relations }
 })
 
 /** The transaction client type passed into `db.transaction(async (tx) => ...)`. */

@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { render, toPlainText } from '@react-email/render'
 import InvitationEmail, { InvitationEmailProps } from '~/emails/invitation'
 import MagicLinkEmail, { MagicLinkEmailProps } from '~/emails/magic-link'
@@ -25,6 +27,9 @@ const componentMap: Record<
   invitation: props => InvitationEmail(props as InvitationEmailProps)
 }
 
+/**
+ * Generic email template renderer with type-safe overloads
+ */
 async function renderEmailTemplate<T extends EmailTemplateType>(
   templateType: T,
   props: EmailTemplateMap[T]
@@ -43,6 +48,14 @@ async function renderEmailTemplate(
   return { html, text }
 }
 
+/**
+ * Sends welcome email to newly registered users
+ *
+ * @param to - Recipient email address
+ * @param props - Welcome email template props
+ * @returns Promise resolving to SentMessageInfo from nodemailer
+ * @throws Error if sending the email fails
+ */
 export async function sendWelcomeEmail(to: string, props: WelcomeEmailProps) {
   'use workflow'
 
@@ -56,6 +69,14 @@ export async function sendWelcomeEmail(to: string, props: WelcomeEmailProps) {
   })
 }
 
+/**
+ * Sends magic link email for passwordless authentication
+ *
+ * @param to - Recipient email address
+ * @param props - Magic link email template props
+ * @returns Promise resolving to SentMessageInfo from nodemailer
+ * @throws Error if sending the email fails
+ */
 export async function sendMagicLinkEmail(
   to: string,
   props: MagicLinkEmailProps
@@ -72,6 +93,14 @@ export async function sendMagicLinkEmail(
   })
 }
 
+/**
+ * Sends an organization invitation email
+ *
+ * @param to - Recipient email address
+ * @param props - Invitation email template props
+ * @returns Promise resolving to SentMessageInfo from nodemailer
+ * @throws Error if sending the email fails
+ */
 export async function sendInvitationEmail(
   to: string,
   props: InvitationEmailProps
@@ -82,7 +111,7 @@ export async function sendInvitationEmail(
 
   return await sendEmail({
     to,
-    subject: `You've been invited to join ${props.organizationName}`,
+    subject: `${props.inviterName} invited you to join ${props.organizationName}`,
     html,
     text
   })

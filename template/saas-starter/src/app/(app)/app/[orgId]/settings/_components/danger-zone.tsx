@@ -3,7 +3,7 @@
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { transferOrganizationOwnershipAction } from '~/app/(app)/actions/organization'
+import { transferOrganizationOwnershipAction } from '~/app/(app)/actions/organizations'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -24,8 +24,13 @@ import {
   SelectValue
 } from '~/components/ui/select'
 import { organization } from '~/lib/auth-client'
+import { OWNERSHIP_DEMOTION_NOTICE } from '~/lib/rbac'
 import { useSafeActionMutation } from '~/lib/safe-action-client'
-import { toastErrorMessage, toastSuccessMessage } from '~/lib/toast-message'
+import {
+  toastActionError,
+  toastErrorMessage,
+  toastSuccessMessage
+} from '~/lib/toast-message'
 
 type TransferTarget = {
   memberId: string
@@ -52,18 +57,14 @@ export function DangerZone({
   return (
     <section className="border-destructive/30 space-y-6 rounded-lg border p-6">
       <div>
-        <h2 className="text-destructive text-lg font-semibold">Danger zone</h2>
+        <h2 className="text-destructive text-lg font-semibold">Danger Zone</h2>
         <p className="text-muted-foreground text-sm">
-          These actions are irreversible. Proceed with care.
+          These actions are hard or impossible to undo.
         </p>
       </div>
 
       {isOwner && transferTargets.length > 0 ? (
-        <TransferOwnershipRow
-          orgId={orgId}
-          isOwner={isOwner}
-          transferTargets={transferTargets}
-        />
+        <TransferOwnershipRow orgId={orgId} transferTargets={transferTargets} />
       ) : null}
 
       <LeaveOrganizationRow
@@ -101,11 +102,9 @@ function Row({
 
 function TransferOwnershipRow({
   orgId,
-  isOwner,
   transferTargets
 }: {
   orgId: string
-  isOwner: boolean
   transferTargets: TransferTarget[]
 }) {
   const router = useRouter()
@@ -120,17 +119,12 @@ function TransferOwnershipRow({
         setOpen(false)
         router.refresh()
       },
-      onError: error => {
-        toastErrorMessage(error.message ?? 'Failed to transfer ownership')
-      }
+      onError: error =>
+        toastActionError(error, 'Ownership was not transferred. Try again.')
     }
   )
 
   function handleTransfer() {
-    if (!isOwner) {
-      toastErrorMessage('Only the organization owner can transfer ownership.')
-      return
-    }
     if (!targetId) return
 
     transferOwnership.mutate({
@@ -141,8 +135,8 @@ function TransferOwnershipRow({
 
   return (
     <Row
-      title="Transfer ownership"
-      description="Make another member the owner. You'll become an admin."
+      title="Transfer Ownership"
+      description="Make another member the owner. You become an admin."
     >
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
@@ -150,17 +144,14 @@ function TransferOwnershipRow({
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Transfer ownership</DialogTitle>
-            <DialogDescription>
-              Select the member who should become the new owner. You&apos;ll be
-              demoted to admin.
-            </DialogDescription>
+            <DialogTitle>Transfer Ownership</DialogTitle>
+            <DialogDescription>{OWNERSHIP_DEMOTION_NOTICE}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2 py-1">
-            <Label>New owner</Label>
+            <Label htmlFor="new-owner">New owner</Label>
             <Select value={targetId} onValueChange={setTargetId}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="new-owner" className="w-full">
                 <SelectValue placeholder="Select a member" />
               </SelectTrigger>
               <SelectContent>
@@ -186,9 +177,9 @@ function TransferOwnershipRow({
               disabled={transferOwnership.isPending || !targetId}
             >
               {transferOwnership.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="animate-spin" />
               )}
-              Transfer ownership
+              Transfer Ownership
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -214,7 +205,7 @@ function LeaveOrganizationRow({
     // Guard: the only owner must transfer ownership before leaving.
     if (isSoleOwner) {
       toastErrorMessage(
-        'Transfer ownership to another member before leaving this organization.'
+        'Transfer ownership to another member before you leave this organization.'
       )
       return
     }
@@ -223,18 +214,20 @@ function LeaveOrganizationRow({
     const { error } = await organization.leave({ organizationId: orgId })
 
     if (error) {
-      toastErrorMessage(error.message ?? 'Failed to leave organization')
+      toastActionError(error, 'You are still a member. Try again.')
       setSubmitting(false)
       return
     }
 
     toastSuccessMessage(`You left ${orgName}`)
     router.push('/app')
+    // Re-render the app layout so the sidebar drops the organization.
+    router.refresh()
   }
 
   return (
     <Row
-      title="Leave organization"
+      title="Leave Organization"
       description="Remove yourself from this organization."
     >
       <Dialog open={open} onOpenChange={setOpen}>
@@ -244,12 +237,12 @@ function LeaveOrganizationRow({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {isSoleOwner ? 'Transfer ownership first' : `Leave ${orgName}?`}
+              {isSoleOwner ? 'Transfer Ownership First' : `Leave ${orgName}`}
             </DialogTitle>
             <DialogDescription>
               {isSoleOwner
-                ? "You're the only owner of this organization. Make another member the owner before you leave - or delete the organization instead."
-                : "You'll lose access to this organization. An owner or admin will need to invite you back."}
+                ? "You're the only owner. Make another member the owner before you leave, or delete the organization instead."
+                : 'You lose access to this organization. An owner or admin must invite you to return.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -266,10 +259,8 @@ function LeaveOrganizationRow({
                 onClick={handleLeave}
                 disabled={submitting}
               >
-                {submitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Leave organization
+                {submitting && <Loader2 className="animate-spin" />}
+                Leave Organization
               </Button>
             ) : null}
           </DialogFooter>
@@ -296,18 +287,19 @@ function DeleteOrganizationRow({
     const { error } = await organization.delete({ organizationId: orgId })
 
     if (error) {
-      toastErrorMessage(error.message ?? 'Failed to delete organization')
+      toastActionError(error, 'The organization was not deleted. Try again.')
       setSubmitting(false)
       return
     }
 
     toastSuccessMessage(`${orgName} deleted`)
     router.push('/app')
+    router.refresh()
   }
 
   return (
     <Row
-      title="Delete organization"
+      title="Delete Organization"
       description="Permanently delete this organization and all of its data."
     >
       <Dialog
@@ -322,18 +314,19 @@ function DeleteOrganizationRow({
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete {orgName}?</DialogTitle>
+            <DialogTitle>Delete {orgName}</DialogTitle>
             <DialogDescription>
-              This cannot be undone. All members, invitations and data for this
-              organization will be permanently removed.
+              This permanently removes every member, invitation, and file, and
+              cancels the subscription. You cannot undo it.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2 py-1">
-            <Label>
+            <Label htmlFor="confirm-delete">
               Type <span className="font-semibold">{orgName}</span> to confirm
             </Label>
             <Input
+              id="confirm-delete"
               value={confirmText}
               onChange={e => setConfirmText(e.target.value)}
               placeholder={orgName}
@@ -353,8 +346,8 @@ function DeleteOrganizationRow({
               onClick={handleDelete}
               disabled={submitting || confirmText !== orgName}
             >
-              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete organization
+              {submitting && <Loader2 className="animate-spin" />}
+              Delete Organization
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,21 @@
-import { Terminal } from 'lucide-react'
+/**
+ * @fileoverview Login/Sign-in Page
+ *
+ * Authentication entry point supporting multiple sign-in methods:
+ * - Email with magic link (passwordless)
+ * - OAuth (Google, GitHub)
+ *
+ * **Behavior:**
+ * - Redirects to /admin for admin users
+ * - Redirects to /app for regular authenticated users
+ * - Shows login form for anonymous users
+ *
+ * @module app/(auth)/login/page
+ */
+
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Logo } from '~/components/logo'
 import {
   Card,
   CardContent,
@@ -11,37 +26,41 @@ import {
 } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 import { getAuthSession } from '~/lib/auth'
+import { sanitizeCallbackUrl } from '~/lib/callback-url'
 import { EmailLoginForm } from './email-login-form'
 import { SocialLoginButtons } from './social-login-buttons'
 
-function sanitizeCallback(value: string | string[] | undefined) {
-  if (typeof value !== 'string') return null
-  if (!value.startsWith('/') || value.startsWith('//')) return null
-  return value
-}
-
+/**
+ * Login Page Component
+ *
+ * Renders authentication page with multiple login options.
+ * Checks session and redirects already-authenticated users.
+ *
+ * @returns {JSX.Element} Login form with email and OAuth options
+ */
 export default async function LoginPage({
   searchParams
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const resolvedParams = (await searchParams) ?? {}
-  const callbackUrl = sanitizeCallback(resolvedParams.callbackUrl)
-
   const authSession = await getAuthSession()
+  const resolvedParams = (await searchParams) ?? {}
+  const callbackUrl = sanitizeCallbackUrl(resolvedParams.callbackUrl)
 
-  if (authSession) {
-    return redirect(callbackUrl ?? (authSession.isAdmin ? '/admin' : '/app'))
+  if (authSession?.isAdmin) {
+    return redirect(callbackUrl ?? '/admin')
+  } else if (authSession) {
+    return redirect(callbackUrl ?? '/app')
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            <Terminal className="text-primary size-6" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+          <Link href="/" className="mx-auto mb-4 inline-flex">
+            <Logo size={40} priority className="text-xl" />
+          </Link>
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
           <CardDescription className="text-muted-foreground text-sm">
             Sign in to your account to continue
           </CardDescription>
@@ -50,8 +69,7 @@ export default async function LoginPage({
           <div className="border-muted-foreground/50 bg-muted/50 rounded-lg border border-dashed p-4">
             <p className="text-muted-foreground text-sm">
               <strong>New to our site?</strong> No need to create a separate
-              account. Simply use one of the options below to both sign up and
-              log in.
+              account. Use either option below to sign up and log in.
             </p>
           </div>
 
@@ -77,11 +95,11 @@ export default async function LoginPage({
               href="/"
               className="text-primary underline-offset-4 hover:underline"
             >
-              Return to home page
+              Return to Home Page
             </Link>
           </div>
         </CardFooter>
       </Card>
-    </main>
+    </div>
   )
 }

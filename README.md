@@ -10,36 +10,41 @@ bunx create-ej-app@latest
 
 ## Features
 
-- **Next.js 16** — React 19, Server Components, App Router
-- **Better Auth**
-  - Email / password
+- **Next.js 16**: React 19, Server Components, App Router
+- **Better Auth**:
   - Magic link
   - GitHub and Google OAuth
   - Account linking
-  - Admin role
-- **Drizzle ORM** — type-safe SQL over PostgreSQL
-- **Elysia** — fast HTTP APIs on Bun
-- **Workflow** — durable background jobs
-- **React Email** — transactional emails as React components
-- **OpenTelemetry** — traces, metrics, and structured logs (GCP, Datadog, Honeycomb, Grafana)
-- **shadcn/ui** — accessible components on Radix UI
+  - `user`, `admin`, and `superadmin` roles
+  - Organizations (SaaS starter)
+- **Drizzle ORM**: type-safe SQL over PostgreSQL
+- **Stripe**: subscriptions, trials, and the billing portal (SaaS starter)
+- **Elysia**: HTTP APIs on Bun
+- **Workflow**: durable background jobs
+- **React Email**: transactional emails as React components
+- **OpenTelemetry**: traces with one wide event per server action
+- **shadcn/ui**: accessible components on Radix UI
 - **Tailwind CSS 4**
-- **TypeScript** — strict mode
+- **TypeScript**: strict mode
 - **TanStack Query**
-- **Lucide React**
+- **Bun tests on PGlite**: in-memory Postgres, no database server needed
 - **Docker**
 
 ---
 
 ## Templates
 
-### Next.js full-stack app
+### Next.js full-stack app (`nextjs`)
 
-Next.js 16, Better Auth, shadcn/ui, and Drizzle ORM. Use this for web apps that need auth, UI, and backend APIs.
+Next.js 16, Better Auth, shadcn/ui, and Drizzle ORM. Use it for web apps that need sign-in, an admin panel, and server actions.
 
-### API server
+### SaaS starter (`saas-starter`)
 
-REST API with Elysia on Bun, Drizzle ORM, PostgreSQL, and Zod validation. Use this for headless APIs, internal tools, and services.
+Everything in `nextjs`, plus organizations with invitations and roles, Stripe subscriptions with trials and the billing portal, R2 uploads, support tickets, in-app feedback, and a contact form.
+
+### API server (`api`)
+
+REST API with Elysia on Bun, Drizzle ORM, PostgreSQL, and Zod validation. Use it for headless APIs, internal tools, and services.
 
 ---
 
@@ -53,14 +58,14 @@ You will be prompted for:
 
 - Project name
 - Description
-- Template (`nextjs` or `api`)
+- Template (`nextjs`, `saas-starter`, or `api`)
 - Whether to initialize git
 
 Example:
 
 ```text
 ? Enter the project name: my-app
-? Enter a description: Production-ready Next.js app
+? Enter a description for the project: Production-ready Next.js app
 ? Select a template: nextjs
 ? Initialize a git repository? yes
 ```
@@ -69,23 +74,40 @@ Example:
 
 ## What you get
 
-### Next.js full-stack template
+### Next.js and SaaS templates
 
-| Layer         | Stack                                          |
-| ------------- | ---------------------------------------------- |
-| Framework     | Next.js                                        |
-| Runtime       | Bun                                            |
-| Backend       | Elysia APIs                                    |
-| Database      | PostgreSQL + Drizzle                           |
-| Auth          | Better Auth                                    |
-| Email         | React Email (transactional and auth templates) |
-| Observability | OpenTelemetry                                  |
-| Jobs          | Workflow                                       |
-| UI            | shadcn/ui                                      |
-| Styling       | Tailwind CSS                                   |
-| Server state  | TanStack Query                                 |
-| Forms         | react-hook-form + Zod                          |
-| Theme         | Dark mode included                             |
+| Layer         | Stack                                             |
+| ------------- | ------------------------------------------------- |
+| Framework     | Next.js 16, React 19, React Compiler              |
+| Runtime       | Bun                                               |
+| Database      | PostgreSQL + Drizzle ORM                          |
+| Auth          | Better Auth: magic link, GitHub, Google, roles    |
+| Actions       | next-safe-action with role-based clients          |
+| Errors        | `AppError` with customer-safe messages            |
+| Observability | OpenTelemetry, one wide event per action          |
+| Email         | React Email + Nodemailer, sent by Workflow        |
+| UI            | shadcn/ui, Tailwind CSS 4, dark mode, Geist fonts |
+| Data fetching | TanStack Query + nuqs URL state                   |
+| Forms         | react-hook-form + Zod                             |
+| Tests         | Bun tests on in-memory Postgres (PGlite)          |
+| Agent docs    | `AGENTS.md` and `CLAUDE.md` with project rules    |
+
+Both templates ship with:
+
+- An admin panel with user management, impersonation, and ban controls
+- Profile page, error pages, 404 page, robots.txt, and sitemap
+- A seed script, a database reset script, and focused tests
+- A test that fails when a client component imports server-only code
+- A test that fails when a foreign key has no index or delete rule
+
+The SaaS starter adds:
+
+- Organizations with owner, admin, and member roles, plus email invitations
+- Stripe Checkout, trials, the billing portal, and idempotent webhooks
+- Per-plan member limits
+- Organization logos on Cloudflare R2, with ownership checks on every upload
+- Support tickets shared by organization managers and answered from the admin panel
+- In-app feedback and a public contact form, each with an admin inbox
 
 ### API server template
 
@@ -107,10 +129,11 @@ Example:
 
 ### Prerequisites
 
-- Node 24+ or Bun
+- [Bun](https://bun.sh/): the template scripts, tests, and Dockerfiles run on it
 - PostgreSQL
-- OAuth credentials for GitHub / Google (Next.js template)
-- An email provider such as Resend, SES, or Postmark (Next.js template)
+- OAuth credentials for GitHub and Google (Next.js and SaaS templates)
+- SMTP credentials from a provider such as Resend, SES, or Postmark (Next.js and SaaS templates)
+- A Stripe account and the Stripe CLI (SaaS template)
 
 ### Install
 
@@ -119,17 +142,17 @@ cd my-app
 bun install
 ```
 
-npm, pnpm, and yarn also work.
+Bun is required: the templates' scripts and Dockerfiles call `bun` directly.
 
 ### Environment variables
 
-Copy `.env.example` to `.env` and fill in the values. Do not commit `.env`.
+The CLI creates `.env` from `.env.example` with a random `BETTER_AUTH_SECRET`. Fill in the rest, and never commit `.env`.
 
 ---
 
 ## Development
 
-### Next.js template
+### Next.js and SaaS templates
 
 ```bash
 bun run dev
@@ -152,74 +175,38 @@ OpenAPI docs: `http://localhost:3000/docs`
 
 ```bash
 bun run build:docker
-docker run -p 3000:3000 my-app
+docker run --env-file .env -p 3000:3000 my-app
 ```
 
----
-
-## Authentication (Next.js template)
-
-Better Auth is set up with:
-
-- Email / password
-- Magic links
-- GitHub and Google OAuth
-- Admin panel
-- User impersonation
+The Next.js and SaaS images are tagged `my-app` and the API image `my-api`; change the tag in `package.json`. The build uses `.env.example` values, so pass real ones at run time with `--env-file`. Run `bun install` first so `bun.lock` exists.
 
 ---
 
-## UI (Next.js template)
+## Next.js and SaaS templates
 
-Preinstalled components:
+Each generated project documents itself. Read these first:
 
-- Button
-- Card
-- Form
-- Input
-- Toast
+- `README.md`: setup steps and commands
+- `AGENTS.md`: architecture, authorization rules, and writing rules for you and for coding agents
+- `src/lib/siteConfig.ts`: product name, description, and contact email
+- `src/db/schema.ts`: database schema
 
-Add more with:
+Push the schema with `bun run db:push`, seed it with `bun run db:seed`, and run the tests with `bun test`.
+
+Add shadcn components with:
 
 ```bash
-bunx shadcn@latest add [component-name]
+bunx shadcn@latest add your_component_name
 ```
-
----
-
-## Route groups (Next.js template)
-
-- `(admin)` — admin dashboard
-- `(app)` — authenticated app
-- `(auth)` — login and signup
-- `(marketing)` — public pages
-
----
-
-## Customization
-
-### Next.js template
-
-- `siteConfig.ts` — name and description
-- `schema.ts` — database schema
-- `auth.ts` — auth providers
-
-### API template
-
-- `src/db/schema.ts` — schema
-- `src/routes/` — endpoints
-- `src/env.ts` — environment variables
-
-Push the schema with `bun run db:push`. Type-check with `bun run type-check`.
 
 ---
 
 ## API template architecture
 
-- **Routes** (`src/routes/`) — HTTP, validation, call data-access
-- **Data-access** (`src/data-access/`) — database access per resource
-- **Database** (`src/db/`) — Drizzle client, schemas, shared fields
-- **Library** (`src/lib/`) — shared utilities and Zod schemas
+- **Routes** (`src/routes/`): HTTP, validation, call data-access
+- **Data-access** (`src/data-access/`): database access per resource
+- **Database** (`src/db/`): Drizzle client, schemas, shared fields
+- **Library** (`src/lib/`): shared utilities and Zod schemas
 
 Includes a sample todos CRUD API with pagination, sorting, search, and OpenAPI docs.
 

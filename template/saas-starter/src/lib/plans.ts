@@ -1,24 +1,25 @@
+import 'server-only'
+
 import { env } from '~/env'
 
+export type PlanId = 'free' | 'pro' | 'ultimate'
+
+type PlanPrice = {
+  id: string
+  /** Minor units, as Stripe stores them: 2000 is $20.00. */
+  amount: number
+  currency: string
+}
+
 export type Plan = {
-  id: 'free' | 'pro' | 'ultimate'
+  id: PlanId
   name: string
   maxMembers: number
-  stripePrice?: {
-    monthly: {
-      id: string
-      amount: number
-      currency: string
-    }
-    annual: {
-      id: string
-      amount: number
-      currency: string
-    }
-  }
+  stripePrice?: { monthly: PlanPrice; annual: PlanPrice }
   canUseTrial?: boolean
 }
 
+/** Every plan, cheapest first. Stripe prices come from `bun run stripe:setup`. */
 export const PLANS: Plan[] = [
   {
     id: 'free',
@@ -61,3 +62,29 @@ export const PLANS: Plan[] = [
     }
   }
 ]
+
+/** Subscription statuses that keep the paid plan's features switched on. */
+export const ACTIVE_SUBSCRIPTION_STATUSES = [
+  'trialing',
+  'active',
+  'past_due'
+] as const
+
+export function isActiveSubscriptionStatus(status: string): boolean {
+  return (ACTIVE_SUBSCRIPTION_STATUSES as readonly string[]).includes(status)
+}
+
+/**
+ * Statuses with no live Stripe subscription behind them. Any other status
+ * (including `unpaid`, `paused`, and `incomplete`) still bills or can resume,
+ * so changes go through the billing portal instead of a new checkout.
+ */
+export const ENDED_SUBSCRIPTION_STATUSES = [
+  'free',
+  'canceled',
+  'incomplete_expired'
+] as const
+
+export function hasLiveSubscription(status: string): boolean {
+  return !(ENDED_SUBSCRIPTION_STATUSES as readonly string[]).includes(status)
+}

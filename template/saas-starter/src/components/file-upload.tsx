@@ -3,12 +3,40 @@
 import { File, FileText, Loader2, Music, Upload, Video, X } from 'lucide-react'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
-import { toast } from 'sonner'
-import { generateUploadUrlAction } from '~/actions/uploads'
+import { generateUploadUrlAction } from '~/app/actions/uploads'
 import { Button } from '~/components/ui/button'
 import { cn } from '~/lib/cn'
-import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '~/lib/constants'
+import {
+  MAX_FILE_SIZE_BYTES,
+  MAX_FILE_SIZE_MB,
+  R2_UPLOAD_EXTENSION_BY_MIME_TYPE,
+  type R2UploadMimeType
+} from '~/lib/constants'
+import { toastErrorMessage, toastIfActionFailed } from '~/lib/toast-message'
 
+function isAllowedMimeType(type: string): type is R2UploadMimeType {
+  return type in R2_UPLOAD_EXTENSION_BY_MIME_TYPE
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+      reject(new Error('Failed to read file'))
+    }
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('Failed to read file'))
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+// Discriminated union so the preview renderer knows exactly what to show
+// without guessing from a raw URL string.
 type PreviewState =
   | { kind: 'image'; url: string }
   | { kind: 'file'; name: string; mimeType: string }
@@ -16,6 +44,7 @@ type PreviewState =
 
 function getInitialPreview(currentUrl?: string | null): PreviewState {
   if (!currentUrl) return null
+  // base64 data URLs and image paths/URLs both render as images
   return { kind: 'image', url: currentUrl }
 }
 
@@ -32,7 +61,7 @@ function FileTypeIcon({ mimeType }: { mimeType: string }) {
 type Props = {
   /** MIME type filter passed to the file input, e.g. `"image/*"` or `"image/*,application/pdf"`. */
   accept: string
-  /** Scopes the upload to a organization for cleanup tracking. */
+  /** Organization that owns the upload; the server checks you manage it. */
   organizationId: string
   /**
    * Called with the R2 object key (prod) or base64 data URL (dev mode) once
@@ -40,13 +69,13 @@ type Props = {
    */
   onClientUploadFinish: (key: string | null) => void
   /**
-   * Pre-resolved URL for the current value - pass the output of
+   * Pre-resolved URL for the current value. Pass the output of
    * `resolveImageUrl` from the parent server component so the preview renders
    * correctly for existing R2 keys.
    */
   currentUrl?: string | null
   className?: string
-  /** Passed to next/image `sizes` - should match the rendered widget width. */
+  /** Passed to next/image `sizes`. It should match the rendered widget width. */
   sizes?: string
 }
 
@@ -66,12 +95,18 @@ export function FileUpload({
 
   const handleFile = async (file: File) => {
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File must be under ${MAX_FILE_SIZE_MB}MB`)
+      toastErrorMessage(`Choose a file under ${MAX_FILE_SIZE_MB} MB.`)
+      return
+    }
+
+    if (!isAllowedMimeType(file.type)) {
+      toastErrorMessage('Choose a JPEG, PNG, WebP, or GIF image.')
       return
     }
 
     setIsUploading(true)
 
+    // Set the preview from the file type without a network round trip.
     if (file.type.startsWith('image/')) {
       setPreview({ kind: 'image', url: URL.createObjectURL(file) })
     } else {
@@ -85,8 +120,13 @@ export function FileUpload({
       organizationId
     })
 
+    if (toastIfActionFailed(result)) {
+      setPreview(getInitialPreview(currentUrl))
+      setIsUploading(false)
+      return
+    }
     if (!result?.data) {
-      toast.error('Failed to prepare upload. Please try again.')
+      toastErrorMessage('The upload could not start. Try again.')
       setPreview(getInitialPreview(currentUrl))
       setIsUploading(false)
       return
@@ -94,8 +134,8 @@ export function FileUpload({
 
     const { data } = result
 
-    if (data.mode === 'r2') {
-      try {
+    try {
+      if (data.mode === 'r2') {
         const res = await fetch(data.uploadUrl, {
           method: 'PUT',
           body: file,
@@ -103,27 +143,25 @@ export function FileUpload({
         })
         if (!res.ok) throw new Error(`R2 upload failed: ${res.status}`)
         onClientUploadFinish(data.key)
-      } catch {
-        toast.error('Upload failed. Please try again.')
-        setPreview(getInitialPreview(currentUrl))
-      }
-    } else {
-      const reader = new FileReader()
-      reader.onload = e => {
-        const base64 = e.target?.result as string
+      } else {
+        // Development mode has no R2 credentials, so store base64 data directly.
+        // Await the read so isUploading stays true until onClientUploadFinish runs.
+        const base64 = await readFileAsDataUrl(file)
         if (file.type.startsWith('image/')) {
           setPreview({ kind: 'image', url: base64 })
         }
         onClientUploadFinish(base64)
       }
-      reader.onerror = () => {
-        toast.error('Failed to read file. Please try again.')
-        setPreview(getInitialPreview(currentUrl))
-      }
-      reader.readAsDataURL(file)
+    } catch {
+      toastErrorMessage(
+        data.mode === 'r2'
+          ? 'The upload failed. Check your connection and try again.'
+          : 'The file could not be read. Choose it again.'
+      )
+      setPreview(getInitialPreview(currentUrl))
+    } finally {
+      setIsUploading(false)
     }
-
-    setIsUploading(false)
   }
 
   const handleClear = (e: React.MouseEvent) => {
@@ -187,7 +225,7 @@ export function FileUpload({
               Click to upload
             </span>
             <span className="text-muted-foreground/60 text-[11px]">
-              Max {MAX_FILE_SIZE_MB}MB
+              Max {MAX_FILE_SIZE_MB} MB
             </span>
           </div>
         )}
@@ -206,6 +244,7 @@ export function FileUpload({
           size="icon"
           className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-sm"
           onClick={handleClear}
+          aria-label="Remove file"
         >
           <X className="h-3 w-3" />
         </Button>

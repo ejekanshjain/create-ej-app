@@ -30,13 +30,14 @@ import {
   SelectValue
 } from '~/components/ui/select'
 import { organization } from '~/lib/auth-client'
-import { toastErrorMessage, toastSuccessMessage } from '~/lib/toast-message'
+import { ASSIGNABLE_ROLES, ROLE_DESCRIPTIONS } from '~/lib/rbac'
+import { toastActionError, toastSuccessMessage } from '~/lib/toast-message'
 import { emailValidation } from '~/lib/validations'
 import { useOrganizationContext } from '../../../../_components/organization-context'
 
 const schema = z.object({
   email: emailValidation,
-  role: z.enum(['admin', 'member'])
+  role: z.enum(ASSIGNABLE_ROLES)
 })
 
 type Form = z.infer<typeof schema>
@@ -62,6 +63,7 @@ export function InviteMemberDialog({
     defaultValues: { email: '', role: 'member' }
   })
 
+  // Seed once per open; see "Client data and forms" in AGENTS.md.
   useEffect(() => {
     if (open) reset({ email: '', role: 'member' })
   }, [open, reset])
@@ -74,7 +76,7 @@ export function InviteMemberDialog({
     })
 
     if (error) {
-      toastErrorMessage(error.message ?? 'Failed to send invitation')
+      toastActionError(error, 'The invitation was not sent. Try again.')
       return
     }
 
@@ -88,10 +90,10 @@ export function InviteMemberDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite a teammate</DialogTitle>
+          <DialogTitle>Invite Member</DialogTitle>
           <DialogDescription>
-            Send an email invitation to join this organization. They&apos;ll
-            need to sign in with this email to accept.
+            We email an invitation link. They accept it by signing in with this
+            address.
           </DialogDescription>
         </DialogHeader>
 
@@ -129,12 +131,11 @@ export function InviteMemberDialog({
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">
-                        Admin - manage members & settings
-                      </SelectItem>
-                      <SelectItem value="member">
-                        Member - standard access
-                      </SelectItem>
+                      {ASSIGNABLE_ROLES.map(role => (
+                        <SelectItem key={role} value={role}>
+                          {ROLE_DESCRIPTIONS[role]}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
@@ -156,10 +157,8 @@ export function InviteMemberDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Send invitation
+              {isSubmitting && <Loader2 className="animate-spin" />}
+              Send Invitation
             </Button>
           </DialogFooter>
         </form>

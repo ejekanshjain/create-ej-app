@@ -3,9 +3,13 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
 import { organization, signOut } from '~/lib/auth-client'
+import {
+  toastActionError,
+  toastInfoMessage,
+  toastSuccessMessage
+} from '~/lib/toast-message'
 
 export function AcceptInvitationForm({
   invitationId,
@@ -22,11 +26,11 @@ export function AcceptInvitationForm({
     setAccepting(true)
     const { error } = await organization.acceptInvitation({ invitationId })
     if (error) {
-      toast.error(error.message ?? 'Failed to accept invitation')
+      toastActionError(error, 'The invitation was not accepted. Try again.')
       setAccepting(false)
       return
     }
-    toast.success(`You've joined ${organizationName}`)
+    toastSuccessMessage(`You joined ${organizationName}`)
     router.push('/app')
   }
 
@@ -34,11 +38,11 @@ export function AcceptInvitationForm({
     setDeclining(true)
     const { error } = await organization.rejectInvitation({ invitationId })
     if (error) {
-      toast.error(error.message ?? 'Failed to decline invitation')
+      toastActionError(error, 'The invitation was not declined. Try again.')
       setDeclining(false)
       return
     }
-    toast('Invitation declined')
+    toastInfoMessage('Invitation declined')
     router.push('/')
   }
 
@@ -47,7 +51,7 @@ export function AcceptInvitationForm({
   return (
     <div className="flex flex-col gap-3">
       <Button onClick={handleAccept} disabled={disabled} className="w-full">
-        {accepting ? 'Accepting...' : 'Accept invitation'}
+        {accepting ? 'Accepting…' : 'Accept Invitation'}
       </Button>
       <Button
         onClick={handleDecline}
@@ -55,7 +59,7 @@ export function AcceptInvitationForm({
         variant="outline"
         className="w-full"
       >
-        {declining ? 'Declining...' : 'Decline'}
+        {declining ? 'Declining…' : 'Decline'}
       </Button>
     </div>
   )
@@ -72,16 +76,18 @@ export function WrongAccountActions({
   async function handleSwitch() {
     setLoading(true)
     await signOut()
-    router.push(`/login?callbackUrl=/accept-invitation/${invitationId}`)
+    router.push(
+      `/login?callbackUrl=${encodeURIComponent(`/accept-invitation/${invitationId}`)}`
+    )
   }
 
   return (
     <div className="flex justify-center gap-3">
       <Button asChild variant="outline">
-        <Link href="/">Return home</Link>
+        <Link href="/">Go Home</Link>
       </Button>
       <Button onClick={handleSwitch} disabled={loading}>
-        {loading ? 'Signing out...' : 'Switch account'}
+        {loading ? 'Signing out…' : 'Switch Account'}
       </Button>
     </div>
   )

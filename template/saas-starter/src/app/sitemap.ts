@@ -3,13 +3,14 @@ import { env } from '~/env'
 
 export const dynamic = 'force-dynamic'
 
+/** Public pages only. Staging returns an empty sitemap. */
 export default function sitemap(): MetadataRoute.Sitemap {
   if (env.APP_ENV === 'staging') return []
 
   const baseUrl = env.BETTER_AUTH_URL
   const lastModified = new Date()
 
-  const routes = ['/', '/privacy', '/terms', '/login']
+  const routes = ['/', '/contact-us', '/privacy', '/terms', '/login']
 
   return routes.map(path => ({
     url: `${baseUrl}${path === '/' ? '' : path}`,

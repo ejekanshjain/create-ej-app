@@ -1,93 +1,73 @@
 import 'server-only'
 
-import { and, count, desc, eq } from 'drizzle-orm'
-import { cache } from 'react'
+import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '~/db'
-import { membersTable, organizationsTable } from '~/db/schema'
-import type { UserOrganization } from './app-navigation'
-import { getAuthSession } from './auth'
-import { resolveImageUrl } from './storage'
+import { membersTable } from '~/db/schema'
+import { AppError, AppErrorCode } from './errors'
+import type { OrganizationRole } from './rbac'
 
-const getUserOrganizations = async (): Promise<UserOrganization[]> => {
-  const session = await getAuthSession()
-  if (!session) return []
-
-  const orgs = await db
-    .select({
-      id: organizationsTable.id,
-      name: organizationsTable.name,
-      slug: organizationsTable.slug,
-      logo: organizationsTable.logo,
-      role: membersTable.role,
-      userId: membersTable.userId,
-      memberId: membersTable.id
-    })
-    .from(membersTable)
-    .innerJoin(
-      organizationsTable,
-      eq(membersTable.organizationId, organizationsTable.id)
-    )
-    .where(eq(membersTable.userId, session.user.id))
-    .orderBy(desc(membersTable.createdAt))
-
-  return orgs.map(o => ({ ...o, logo: resolveImageUrl(o.logo) }))
-}
-
-export const getUserOrganizationsCached = cache(getUserOrganizations)
-
-export const getUserMembershipCached = cache(async (organizationId: string) => {
-  const session = await getAuthSession()
-  if (!session) return null
-
-  const member = await db.query.membersTable.findFirst({
+/**
+ * The caller's membership in an organization, or null when they have none.
+ */
+export async function getMembership(organizationId: string, userId: string) {
+  const membership = await db.query.membersTable.findFirst({
     where: and(
       eq(membersTable.organizationId, organizationId),
-      eq(membersTable.userId, session.user.id)
-    )
+      eq(membersTable.userId, userId)
+    ),
+    columns: { id: true, role: true }
   })
 
-  return member ?? null
-})
+  return membership ?? null
+}
 
-export const getOrganizationMembers = cache(async (organizationId: string) =>
-  db.query.membersTable.findMany({
-    where: eq(membersTable.organizationId, organizationId),
-    with: {
-      user: {
-        columns: { id: true, name: true, email: true, image: true }
-      }
-    },
-    orderBy: [desc(membersTable.createdAt)]
-  })
-)
-
-export const getOrganizationMemberCount = cache(
-  async (organizationId: string) => {
-    const [row] = await db
-      .select({ count: count() })
-      .from(membersTable)
-      .where(eq(membersTable.organizationId, organizationId))
-
-    return row?.count ?? 0
-  }
-)
-
-export const assertUserMembership = async (organizationId: string) => {
-  const membership = await getUserMembershipCached(organizationId)
+/**
+ * Asserts the caller belongs to the organization, in any role.
+ * Throws {@link AppError} with code FORBIDDEN otherwise.
+ */
+export async function assertMember(organizationId: string, userId: string) {
+  const membership = await getMembership(organizationId, userId)
   if (!membership) {
-    throw new Error('User does not have access to this organization')
+    throw new AppError(
+      AppErrorCode.FORBIDDEN,
+      'You do not have access to this organization.'
+    )
   }
   return membership
 }
 
-const MANAGER_ROLES = ['owner', 'admin']
-
-export const assertUserCanManageOrganization = async (
-  organizationId: string
-) => {
-  const membership = await getUserMembershipCached(organizationId)
-  if (!membership || !MANAGER_ROLES.includes(membership.role)) {
-    throw new Error('User does not have permission to manage this organization')
+/**
+ * Asserts the caller holds one of `allowedRoles` in the organization.
+ */
+export async function assertRole(
+  organizationId: string,
+  userId: string,
+  allowedRoles: ReadonlyArray<OrganizationRole>
+) {
+  const membership = await db.query.membersTable.findFirst({
+    where: and(
+      eq(membersTable.organizationId, organizationId),
+      eq(membersTable.userId, userId),
+      inArray(membersTable.role, [...allowedRoles])
+    ),
+    columns: { id: true, role: true }
+  })
+  if (!membership) {
+    throw new AppError(
+      AppErrorCode.FORBIDDEN,
+      'You do not have permission to perform this action.'
+    )
   }
   return membership
+}
+
+/**
+ * Asserts the caller can manage the organization (owner or admin). Use it for
+ * settings, billing, members, and uploads.
+ */
+export function assertCanManageOrganization(
+  organizationId: string,
+  userId: string
+) {
+  return assertRole(organizationId, userId, ['owner', 'admin'])
 }

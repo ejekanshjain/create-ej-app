@@ -1,58 +1,62 @@
-import { CreditCard, Home, Settings, Users } from 'lucide-react'
+import { CreditCard, Home, Settings, Ticket, Users } from 'lucide-react'
 import { SidebarNavGroup } from '~/components/navigation-sidebar'
+import { isManagerRole } from './rbac'
 
-export type UserOrganization = {
-  id: string
-  name: string
-  slug: string
-  logo: string | null
+/**
+ * Sidebar and command-search entries for one organization. Managers (owner
+ * and admin) also get support and settings pages.
+ */
+export function getAppNavigation(
+  organizationId: string,
   role: string
-  userId: string
-  memberId: string
-}
-
-export const canManageOrganization = (role: string): boolean =>
-  role === 'owner' || role === 'admin'
-
-export const getAppNavigation = (
-  orgId: string,
-  role: string
-): SidebarNavGroup[] => {
+): SidebarNavGroup[] {
   const groups: SidebarNavGroup[] = [
     {
-      label: 'Overview',
+      label: 'Workspace',
       items: [
         {
           title: 'Dashboard',
-          url: `/app/${orgId}/dashboard`,
+          url: `/app/${organizationId}/dashboard`,
           icon: Home
         }
       ]
     }
   ]
 
-  if (canManageOrganization(role)) {
-    groups.push({
-      label: 'Settings',
-      items: [
-        {
-          title: 'General',
-          url: `/app/${orgId}/settings`,
-          icon: Settings,
-          exact: true
-        },
-        {
-          title: 'Members',
-          url: `/app/${orgId}/settings/members`,
-          icon: Users
-        },
-        {
-          title: 'Billing',
-          url: `/app/${orgId}/settings/billing`,
-          icon: CreditCard
-        }
-      ]
-    })
+  if (isManagerRole(role)) {
+    groups.push(
+      {
+        label: 'Help',
+        items: [
+          {
+            title: 'Support',
+            url: `/app/${organizationId}/support-tickets`,
+            icon: Ticket
+          }
+        ]
+      },
+      {
+        label: 'Settings',
+        items: [
+          {
+            title: 'General',
+            url: `/app/${organizationId}/settings`,
+            icon: Settings,
+            exact: true
+          },
+          {
+            title: 'Members',
+            url: `/app/${organizationId}/settings/members`,
+            icon: Users
+          },
+          {
+            title: 'Billing',
+            url: `/app/${organizationId}/settings/billing`,
+            icon: CreditCard
+          }
+        ]
+      }
+    )
   }
 
   return groups

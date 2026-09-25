@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "email:dev": "email dev --dir src/emails",
-    "email:test": "bun ./src/scripts/test-mail.ts",
+    "email:test": "bun --conditions=react-server ./src/scripts/test-mail.ts",
     "workflow:inspect": "workflow inspect runs --web",
     "build": "bun --bun next build",
     "build:docker": "docker build -t my-app .",
@@ -14,13 +14,16 @@
     "start": "bun --bun next start",
     "lint": "eslint",
     "type-check": "tsgo --incremental false",
-    "format": "prettier --write \"./src/**/*.{js,cjs,mjs,jsx,ts,tsx}\"",
-    "db:push": "drizzle-kit push",
-    "db:seed": "bun ./src/scripts/seed.ts",
-    "db:reset": "bun ./src/scripts/reset-db.ts",
+    "format": "prettier --log-level warn --write \"./src/**/*.{js,cjs,mjs,jsx,ts,tsx}\" --write \"./tests/**/*.{js,cjs,mjs,jsx,ts,tsx}\"",
+    "test": "bun test",
+    "test:real": "TEST_DATABASE=postgres bun test",
+    "db:push": "bun --conditions=react-server ./src/scripts/setup-db.ts && drizzle-kit push",
+    "db:seed": "bun --conditions=react-server ./src/scripts/seed.ts",
+    "db:reset": "bun --conditions=react-server ./src/scripts/reset-db.ts",
     "db:studio": "drizzle-kit studio",
     "gen:auth": "bunx auth@latest generate",
-    "stripe:setup": "bun ./src/scripts/setup-stripe-plans.ts",
+    "storage:cleanup": "bun --conditions=react-server ./src/scripts/cleanup-temp-uploads.ts",
+    "stripe:setup": "bun --conditions=react-server ./src/scripts/setup-stripe-plans.ts",
     "stripe:dev": "stripe listen --forward-to localhost:3000/api/webhooks/stripe"
   },
   "dependencies": {
@@ -54,6 +57,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "7.88.0",
+    "server-only": "0.0.1",
     "sonner": "2.0.8",
     "stripe": "22.6.2",
     "tailwind-merge": "3.7.0",
@@ -62,6 +66,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@next/bundle-analyzer": "16.3.6",
     "@react-email/preview-server": "5.2.10",
     "@tailwindcss/postcss": "4.3.3",

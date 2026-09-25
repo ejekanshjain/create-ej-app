@@ -1,26 +1,93 @@
+/**
+ * Social authentication button components
+ *
+ * Provides OAuth sign-in buttons for Google and GitHub.
+ */
+
 'use client'
 
+import { useState, useSyncExternalStore } from 'react'
 import { Button } from '~/components/ui/button'
 import { getLastUsedLoginMethod, signIn } from '~/lib/auth-client'
+import { toastActionError, toastErrorMessage } from '~/lib/toast-message'
 
-export const SocialLoginButtons = () => {
-  const lastUsedLoginMethod = getLastUsedLoginMethod()
+type OAuthProvider = 'google' | 'github'
+
+const PROVIDER_LABELS: Record<OAuthProvider, string> = {
+  google: 'Google',
+  github: 'GitHub'
+}
+
+const emptySubscribe = () => () => {}
+
+/**
+ * Social Login Buttons Component
+ *
+ * Renders OAuth provider buttons (Google, GitHub).
+ * Highlights the last-used login method if available.
+ *
+ * @returns {JSX.Element} Flex container with OAuth provider buttons
+ */
+export const SocialLoginButtons = ({
+  callbackUrl
+}: {
+  callbackUrl?: string | null
+}) => {
+  // Cookie/local storage is only available on the client; server snapshot is null.
+  const lastUsedLoginMethod = useSyncExternalStore(
+    emptySubscribe,
+    () => getLastUsedLoginMethod() ?? null,
+    () => null
+  )
+  const [pendingProvider, setPendingProvider] = useState<OAuthProvider | null>(
+    null
+  )
+
+  const target = callbackUrl || '/login'
+  const isPending = pendingProvider !== null
+
+  async function startOAuth(provider: OAuthProvider) {
+    if (pendingProvider) return
+
+    setPendingProvider(provider)
+    try {
+      const res = await signIn.social({
+        provider,
+        callbackURL: target
+      })
+      if (res?.error) throw res.error
+    } catch (err) {
+      console.error(`Error starting ${provider} sign-in:`, err)
+      if (
+        typeof err === 'object' &&
+        err &&
+        'message' in err &&
+        typeof err.message === 'string'
+      ) {
+        toastActionError(err)
+      } else {
+        toastErrorMessage(
+          `Sign-in with ${PROVIDER_LABELS[provider]} did not start. Try again.`
+        )
+      }
+      setPendingProvider(null)
+    }
+  }
 
   return (
-    <div className="flex flex-col space-y-2">
+    <div className="flex flex-col gap-2">
       <Button
+        type="button"
         variant="outline"
-        onClick={async () => {
-          await signIn.social({
-            provider: 'google'
-          })
-        }}
+        disabled={isPending}
+        onClick={() => startOAuth('google')}
       >
         <svg
           viewBox="0 0 24 24"
           width="16"
           height="16"
           xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
         >
           <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
             <path
@@ -41,28 +108,29 @@ export const SocialLoginButtons = () => {
             />
           </g>
         </svg>
-        Continue with Google
-        {lastUsedLoginMethod === 'google' ? ' (last used)' : ''}
+        {pendingProvider === 'google'
+          ? 'Continuing with Google…'
+          : `Continue with Google${lastUsedLoginMethod === 'google' ? ' (last used)' : ''}`}
       </Button>
 
       <Button
+        type="button"
         variant="outline"
-        onClick={async () => {
-          await signIn.social({
-            provider: 'github'
-          })
-        }}
+        disabled={isPending}
+        onClick={() => startOAuth('github')}
       >
         <svg
           viewBox="0 0 24 24"
           width="16"
           height="16"
           xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
         >
           <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
         </svg>
-        Continue with GitHub
-        {lastUsedLoginMethod === 'github' ? ' (last used)' : ''}
+        {pendingProvider === 'github'
+          ? 'Continuing with GitHub…'
+          : `Continue with GitHub${lastUsedLoginMethod === 'github' ? ' (last used)' : ''}`}
       </Button>
     </div>
   )

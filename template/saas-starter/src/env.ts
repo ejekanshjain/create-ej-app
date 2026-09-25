@@ -15,7 +15,7 @@ export const env = createEnv({
     EMAIL_SERVER_USER: z.string(),
     EMAIL_SERVER_PASSWORD: z.string(),
     EMAIL_SERVER_HOST: z.string(),
-    EMAIL_SERVER_PORT: z.string(),
+    EMAIL_SERVER_PORT: z.coerce.number().int().min(1).max(65535),
     EMAIL_FROM: z.email(),
     STRIPE_SECRET_KEY: z.string(),
     STRIPE_WEBHOOK_SECRET: z.string(),

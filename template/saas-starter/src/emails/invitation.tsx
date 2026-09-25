@@ -1,56 +1,69 @@
 import { Button, Heading, Text } from 'react-email'
-import EmailLayout from './components/email-layout'
+import EmailLayout from '~/emails/components/email-layout'
+import { INVITATION_EXPIRES_IN_DAYS } from '~/lib/constants'
+import { roleArticle } from '~/lib/rbac'
+import { siteConfig } from '~/lib/siteConfig'
 
 export interface InvitationEmailProps {
-  inviterName: string
+  inviteUrl: string
   organizationName: string
-  inviteLink: string
+  inviterName: string
+  role: string
   companyName: string
 }
 
+/** Invitation to join an organization, sent by the Better Auth organization plugin. */
 export default function InvitationEmail({
-  inviterName,
+  inviteUrl,
   organizationName,
-  inviteLink,
+  inviterName,
+  role,
   companyName
 }: InvitationEmailProps) {
-  const previewText = `${inviterName} invited you to join ${organizationName}`
-
   return (
-    <EmailLayout previewText={previewText} companyName={companyName}>
+    <EmailLayout
+      previewText={`${inviterName} invited you to join ${organizationName}`}
+      companyName={companyName}
+    >
       <Heading className="mb-4 text-2xl font-bold text-gray-900">
-        You've been invited to join {organizationName}
+        You&apos;re Invited to Join {organizationName}
       </Heading>
 
       <Text className="mb-4 text-base text-gray-700">
-        <strong>{inviterName}</strong> has invited you to collaborate in{' '}
-        <strong>{organizationName}</strong> on {companyName}.
+        {inviterName} invited you to join <strong>{organizationName}</strong> on{' '}
+        {companyName} as {roleArticle(role)}.
+      </Text>
+
+      <Text className="mb-4 text-base text-gray-700">
+        Select the button below to accept. You&apos;ll sign in with this email
+        address first.
       </Text>
 
       <Button
-        href={inviteLink}
-        className="mb-4 rounded-lg bg-black px-6 py-3 text-center text-base font-semibold text-white no-underline"
+        href={inviteUrl}
+        className="bg-brand mb-4 rounded-lg px-6 py-3 text-center text-base font-semibold text-white no-underline"
       >
         Accept Invitation
       </Button>
 
       <Text className="mb-4 text-sm text-gray-600">
-        Or copy and paste this link into your browser:
+        Or copy this link into your browser:
       </Text>
 
-      <Text className="mb-4 text-sm break-all text-blue-600">{inviteLink}</Text>
+      <Text className="text-brand mb-4 text-sm break-all">{inviteUrl}</Text>
 
       <Text className="text-sm text-gray-500">
-        If you weren't expecting this invitation, you can safely ignore this
-        email.
+        This invitation expires in {INVITATION_EXPIRES_IN_DAYS} days. If you
+        weren&apos;t expecting it, you can ignore this email.
       </Text>
     </EmailLayout>
   )
 }
 
 InvitationEmail.PreviewProps = {
-  inviterName: 'John Doe',
-  organizationName: 'Acme Inc',
-  inviteLink: 'https://example.com/accept-invitation/abc123',
-  companyName: 'Example Site'
+  inviteUrl: 'https://example.com/accept-invitation/your_invitation_id_here',
+  organizationName: 'Acme Inc.',
+  inviterName: 'Alex Morgan',
+  role: 'member',
+  companyName: siteConfig.name
 } satisfies InvitationEmailProps

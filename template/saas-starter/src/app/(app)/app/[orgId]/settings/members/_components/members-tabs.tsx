@@ -1,7 +1,6 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { ColumnDef } from '@tanstack/react-table'
 import {
   MoreHorizontal,
   RefreshCcw,
@@ -17,7 +16,8 @@ import {
   useQueryStates
 } from 'nuqs'
 import { useState } from 'react'
-import { DataTable } from '~/components/data-table'
+import { ConfirmDialog } from '~/components/confirm-dialog'
+import { DataTable, type DataTableColumnDef } from '~/components/data-table'
 import { SortOrderEnum } from '~/components/data-table/enum'
 import { DataTableFilter } from '~/components/data-table/types'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
@@ -38,8 +38,9 @@ import {
 } from '~/components/ui/tooltip'
 import { organization } from '~/lib/auth-client'
 import { formatDate } from '~/lib/format-date'
+import { roleArticle, type AssignableRole } from '~/lib/rbac'
 import { useSafeActionQuery } from '~/lib/safe-action-client'
-import { toastErrorMessage, toastSuccessMessage } from '~/lib/toast-message'
+import { toastActionError, toastSuccessMessage } from '~/lib/toast-message'
 import { getInvitations, getMembers } from '../../../../../actions/members'
 import { useOrganizationContext } from '../../../../_components/organization-context'
 import { InviteMemberDialog } from './invite-member-dialog'
@@ -67,6 +68,10 @@ type Invitation = {
 const MEMBERS_QUERY_KEY = 'org-members'
 const INVITATIONS_QUERY_KEY = 'org-invitations'
 
+type PendingConfirm =
+  | { kind: 'remove'; member: Member }
+  | { kind: 'cancel'; invitation: Invitation }
+
 function roleVariant(role: string): 'default' | 'secondary' | 'outline' {
   if (role === 'owner') return 'default'
   if (role === 'admin') return 'secondary'
@@ -75,10 +80,11 @@ function roleVariant(role: string): 'default' | 'secondary' | 'outline' {
 
 function statusVariant(
   status: string
-): 'default' | 'secondary' | 'outline' | 'destructive' {
-  if (status === 'accepted') return 'default'
-  if (status === 'pending') return 'secondary'
-  return 'destructive'
+): 'success' | 'info' | 'secondary' | 'destructive' {
+  if (status === 'accepted') return 'success'
+  if (status === 'pending') return 'info'
+  if (status === 'rejected') return 'destructive'
+  return 'secondary'
 }
 
 function getInitials(name: string, email: string) {
@@ -129,6 +135,9 @@ export function MembersTabs({
   const router = useRouter()
   const queryClient = useQueryClient()
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(
+    null
+  )
 
   const atMemberLimit = memberCount >= maxMembers
 
@@ -154,14 +163,9 @@ export function MembersTabs({
     page: memberQuery.mPage,
     limit: memberQuery.mLimit,
     sortBy: (memberQuery.mSortBy ?? undefined) as
-      | 'name'
-      | 'email'
-      | 'role'
-      | 'createdAt'
-      | undefined,
+      'name' | 'email' | 'role' | 'createdAt' | undefined,
     sortOrder: (memberQuery.mSortOrder ?? undefined) as
-      | SortOrderEnum
-      | undefined,
+      SortOrderEnum | undefined,
     search: memberQuery.mSearch ?? undefined,
     filters: memberQuery.mFilters ?? undefined
   }
@@ -172,7 +176,7 @@ export function MembersTabs({
     memberParams
   )
 
-  async function changeRole(member: Member, role: 'admin' | 'member') {
+  async function changeRole(member: Member, role: AssignableRole) {
     setBusyId(member.id)
     const { error } = await organization.updateMemberRole({
       organizationId: orgId,
@@ -181,15 +185,14 @@ export function MembersTabs({
     })
     setBusyId(null)
     if (error) {
-      toastErrorMessage(error.message ?? 'Failed to update role')
+      toastActionError(error, 'The role was not changed. Try again.')
       return
     }
-    toastSuccessMessage(`${member.name} is now ${role}`)
+    toastSuccessMessage(`${member.name} is now ${roleArticle(role)}`)
     invalidateMembers()
   }
 
   async function removeMember(member: Member) {
-    if (!confirm(`Remove ${member.name} from this organization?`)) return
     setBusyId(member.id)
     const { error } = await organization.removeMember({
       organizationId: orgId,
@@ -197,16 +200,17 @@ export function MembersTabs({
     })
     setBusyId(null)
     if (error) {
-      toastErrorMessage(error.message ?? 'Failed to remove member')
+      toastActionError(error, 'The member was not removed. Try again.')
       return
     }
+    setPendingConfirm(null)
     toastSuccessMessage(`${member.name} removed`)
     invalidateMembers()
     // Refresh the server component so the member-limit gate reflects the freed slot.
     router.refresh()
   }
 
-  const memberColumns: ColumnDef<Member, unknown>[] = [
+  const memberColumns: DataTableColumnDef<Member>[] = [
     {
       accessorKey: 'name',
       header: 'Member',
@@ -285,18 +289,18 @@ export function MembersTabs({
             <DropdownMenuContent align="end">
               {member.role !== 'admin' ? (
                 <DropdownMenuItem onClick={() => changeRole(member, 'admin')}>
-                  Make admin
+                  Make Admin
                 </DropdownMenuItem>
               ) : null}
               {member.role !== 'member' ? (
                 <DropdownMenuItem onClick={() => changeRole(member, 'member')}>
-                  Make member
+                  Make Member
                 </DropdownMenuItem>
               ) : null}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
-                onClick={() => removeMember(member)}
+                onClick={() => setPendingConfirm({ kind: 'remove', member })}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Remove
@@ -325,14 +329,9 @@ export function MembersTabs({
     page: inviteQuery.iPage,
     limit: inviteQuery.iLimit,
     sortBy: (inviteQuery.iSortBy ?? undefined) as
-      | 'email'
-      | 'status'
-      | 'createdAt'
-      | 'expiresAt'
-      | undefined,
+      'email' | 'status' | 'createdAt' | 'expiresAt' | undefined,
     sortOrder: (inviteQuery.iSortOrder ?? undefined) as
-      | SortOrderEnum
-      | undefined,
+      SortOrderEnum | undefined,
     search: inviteQuery.iSearch ?? undefined,
     filters: inviteQuery.iFilters ?? undefined
   }
@@ -353,7 +352,7 @@ export function MembersTabs({
     })
     setBusyId(null)
     if (error) {
-      toastErrorMessage(error.message ?? 'Failed to resend invitation')
+      toastActionError(error, 'The invitation was not resent. Try again.')
       return
     }
     toastSuccessMessage(`Invitation resent to ${invitation.email}`)
@@ -361,21 +360,21 @@ export function MembersTabs({
   }
 
   async function cancelInvitation(invitation: Invitation) {
-    if (!confirm(`Cancel the invitation for ${invitation.email}?`)) return
     setBusyId(invitation.id)
     const { error } = await organization.cancelInvitation({
       invitationId: invitation.id
     })
     setBusyId(null)
     if (error) {
-      toastErrorMessage(error.message ?? 'Failed to cancel invitation')
+      toastActionError(error, 'The invitation was not canceled. Try again.')
       return
     }
-    toastSuccessMessage('Invitation cancelled')
+    setPendingConfirm(null)
+    toastSuccessMessage('Invitation canceled')
     invalidateInvitations()
   }
 
-  const invitationColumns: ColumnDef<Invitation, unknown>[] = [
+  const invitationColumns: DataTableColumnDef<Invitation>[] = [
     {
       accessorKey: 'email',
       header: 'Email',
@@ -452,7 +451,9 @@ export function MembersTabs({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
-                onClick={() => cancelInvitation(invitation)}
+                onClick={() =>
+                  setPendingConfirm({ kind: 'cancel', invitation })
+                }
               >
                 <XCircle className="mr-2 h-4 w-4" />
                 Cancel
@@ -477,21 +478,21 @@ export function MembersTabs({
             <TooltipTrigger asChild>
               <span tabIndex={0}>
                 <Button size="sm" disabled>
-                  <UserPlus className="mr-2 size-4" />
-                  Invite member
+                  <UserPlus />
+                  Invite Member
                 </Button>
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              Member limit reached ({memberCount}/{maxMembers}). Upgrade your
-              plan to invite more members.
+              Your plan allows {maxMembers} members and you have {memberCount}.
+              Upgrade your plan to invite more.
             </TooltipContent>
           </Tooltip>
         ) : (
           <InviteMemberDialog onInvited={invalidateInvitations}>
             <Button size="sm">
-              <UserPlus className="mr-2 size-4" />
-              Invite member
+              <UserPlus />
+              Invite Member
             </Button>
           </InviteMemberDialog>
         )}
@@ -505,7 +506,7 @@ export function MembersTabs({
           totalCount={memberData?.[1]}
           enableSearch
           initialSearch={memberParams.search}
-          searchPlaceholder="Search members..."
+          searchPlaceholder="Search members…"
           manualPagination
           manualSorting
           pageIndex={memberParams.page - 1}
@@ -540,7 +541,7 @@ export function MembersTabs({
           totalCount={inviteData?.[1]}
           enableSearch
           initialSearch={inviteParams.search}
-          searchPlaceholder="Search invitations..."
+          searchPlaceholder="Search invitations…"
           manualPagination
           manualSorting
           pageIndex={inviteParams.page - 1}
@@ -566,6 +567,38 @@ export function MembersTabs({
           }
         />
       </TabsContent>
+
+      <ConfirmDialog
+        open={pendingConfirm !== null}
+        onOpenChange={open => {
+          if (!open) setPendingConfirm(null)
+        }}
+        title={
+          pendingConfirm?.kind === 'remove'
+            ? 'Remove Member'
+            : 'Cancel Invitation'
+        }
+        description={
+          pendingConfirm?.kind === 'remove'
+            ? `${pendingConfirm.member.name} loses access to this organization.`
+            : pendingConfirm?.kind === 'cancel'
+              ? `The invitation link sent to ${pendingConfirm.invitation.email} stops working.`
+              : ''
+        }
+        confirmLabel={
+          pendingConfirm?.kind === 'remove'
+            ? 'Remove Member'
+            : 'Cancel Invitation'
+        }
+        pending={busyId !== null}
+        onConfirm={() => {
+          if (pendingConfirm?.kind === 'remove') {
+            void removeMember(pendingConfirm.member)
+          } else if (pendingConfirm?.kind === 'cancel') {
+            void cancelInvitation(pendingConfirm.invitation)
+          }
+        }}
+      />
     </Tabs>
   )
 }

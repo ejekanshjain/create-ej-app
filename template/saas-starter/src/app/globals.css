@@ -28,6 +28,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -84,6 +92,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --success: oklch(0.552 0.152 149.579);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.574 0.188 70.08);
+  --warning-foreground: oklch(1 0 0);
+  --info: oklch(0.569 0.165 254.624);
+  --info-foreground: oklch(1 0 0);
 }
 
 .dark {
@@ -119,6 +134,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --success: oklch(0.723 0.192 149.579);
+  --success-foreground: oklch(0.145 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.205 0 0);
+  --info: oklch(0.707 0.165 254.624);
+  --info-foreground: oklch(0.205 0 0);
 }
 
 @layer base {
@@ -128,6 +150,7 @@
 
   html {
     @apply font-sans antialiased;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -137,6 +160,12 @@
   button:not([disabled]),
   [role='button']:not([disabled]) {
     cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 }
 

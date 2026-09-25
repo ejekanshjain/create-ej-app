@@ -1,11 +1,14 @@
 import { relations } from 'drizzle-orm'
 import {
   accountsTable,
+  feedbacksTable,
   invitationsTable,
   membersTable,
-  organizationsTable,
   organizationSubscriptionsTable,
+  organizationsTable,
   sessionsTable,
+  supportTicketMessagesTable,
+  supportTicketsTable,
   usersTable
 } from './schema'
 
@@ -38,7 +41,9 @@ export const organizationRelations = relations(
       references: [organizationSubscriptionsTable.organizationId]
     }),
     members: many(membersTable),
-    invitations: many(invitationsTable)
+    invitations: many(invitationsTable),
+    supportTickets: many(supportTicketsTable),
+    feedbacks: many(feedbacksTable)
   })
 )
 
@@ -58,7 +63,7 @@ export const invitationRelations = relations(invitationsTable, ({ one }) => ({
     fields: [invitationsTable.organizationId],
     references: [organizationsTable.id]
   }),
-  user: one(usersTable, {
+  inviter: one(usersTable, {
     fields: [invitationsTable.inviterId],
     references: [usersTable.id]
   })
@@ -73,3 +78,35 @@ export const organizationSubscriptionRelations = relations(
     })
   })
 )
+
+export const supportTicketRelations = relations(
+  supportTicketsTable,
+  ({ one, many }) => ({
+    organization: one(organizationsTable, {
+      fields: [supportTicketsTable.organizationId],
+      references: [organizationsTable.id]
+    }),
+    user: one(usersTable, {
+      fields: [supportTicketsTable.userId],
+      references: [usersTable.id]
+    }),
+    messages: many(supportTicketMessagesTable)
+  })
+)
+
+export const supportTicketMessageRelations = relations(
+  supportTicketMessagesTable,
+  ({ one }) => ({
+    ticket: one(supportTicketsTable, {
+      fields: [supportTicketMessagesTable.ticketId],
+      references: [supportTicketsTable.id]
+    })
+  })
+)
+
+export const feedbackRelations = relations(feedbacksTable, ({ one }) => ({
+  organization: one(organizationsTable, {
+    fields: [feedbacksTable.organizationId],
+    references: [organizationsTable.id]
+  })
+}))

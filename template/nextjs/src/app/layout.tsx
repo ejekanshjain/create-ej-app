@@ -1,27 +1,49 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+/**
+ * @fileoverview Root layout: document shell, fonts, metadata, and the
+ * client providers every page shares (TanStack Query, theme, tooltips,
+ * toasts, and the navigation progress bar).
+ *
+ * @module app/layout
+ */
+
+import type { Metadata, Viewport } from 'next'
 import { Loader } from '~/components/loader'
 import { ReactQueryProvider } from '~/components/react-query-provider'
 import { ScreenSize } from '~/components/screen-size'
 import { ThemeProvider } from '~/components/theme-provider'
 import { Toaster } from '~/components/ui/sonner'
+import { TooltipProvider } from '~/components/ui/tooltip'
 import { env } from '~/env'
 import { siteConfig } from '~/lib/siteConfig'
+import { geistMono, geistSans } from './fonts'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin']
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin']
-})
-
 export const metadata: Metadata = {
-  title: siteConfig.name,
-  description: siteConfig.description
+  metadataBase: new URL(env.BETTER_AUTH_URL),
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName: siteConfig.name,
+    description: siteConfig.description
+  },
+  twitter: {
+    card: 'summary_large_image',
+    description: siteConfig.description
+  }
+}
+
+/** Browser chrome colors, matching `--background` in globals.css. */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' }
+  ]
 }
 
 export default function RootLayout({
@@ -38,13 +60,18 @@ export default function RootLayout({
       <body>
         <ReactQueryProvider>
           <ThemeProvider>
-            <Loader />
-            {children}
-            {env.APP_ENV === 'development' ? <ScreenSize /> : null}
-            <Toaster />
+            <TooltipProvider>
+              <Loader />
+              {children}
+              {env.APP_ENV === 'development' ? <ScreenSize /> : null}
+              <Toaster />
+            </TooltipProvider>
           </ThemeProvider>
         </ReactQueryProvider>
       </body>
     </html>
   )
 }
+
+/** Renders every request dynamically, so env-driven metadata stays current. */
+export const dynamic = 'force-dynamic'

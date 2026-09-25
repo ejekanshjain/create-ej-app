@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation'
-import { getUserOrganizationsCached } from '~/lib/organization-access'
+import { notFound } from 'next/navigation'
+import { getOrganizationCached } from '../../actions/organizations'
 import { OrganizationContextProvider } from '../_components/organization-context'
 
-export default async function Layout({
+export default async function OrganizationLayout({
   children,
   params
 }: {
@@ -10,12 +10,10 @@ export default async function Layout({
   params: Promise<{ orgId: string }>
 }) {
   const { orgId } = await params
-
-  const organizations = await getUserOrganizationsCached()
-  const org = organizations.find(o => o.id === orgId)
+  const org = (await getOrganizationCached(orgId))?.data
 
   if (!org) {
-    return redirect('/app')
+    return notFound()
   }
 
   return (
@@ -24,8 +22,7 @@ export default async function Layout({
         id: org.id,
         name: org.name,
         role: org.role,
-        memberId: org.memberId,
-        userId: org.userId
+        memberId: org.memberId
       }}
     >
       {children}

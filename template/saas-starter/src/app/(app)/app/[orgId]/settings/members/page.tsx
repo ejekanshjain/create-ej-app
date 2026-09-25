@@ -1,40 +1,33 @@
 import { Users } from 'lucide-react'
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
+import { getMemberUsage } from '~/app/(app)/actions/members'
 import { PageHeading } from '~/components/page-heading'
-import { canManageOrganization } from '~/lib/app-navigation'
-import {
-  getOrganizationMemberCount,
-  getUserMembershipCached
-} from '~/lib/organization-access'
-import { getOrganizationPlanCached } from '~/lib/organization-plan-limits'
 import { MembersTabs } from './_components/members-tabs'
 
-export default async function Page({
+export default async function MembersPage({
   params
 }: {
   params: Promise<{ orgId: string }>
 }) {
   const { orgId } = await params
+  const usage = (await getMemberUsage(orgId))?.data
 
-  const membership = await getUserMembershipCached(orgId)
-  if (!membership || !canManageOrganization(membership.role)) {
-    return redirect(`/app/${orgId}/dashboard`)
+  if (!usage) {
+    return notFound()
   }
-
-  const [memberCount, { plan }] = await Promise.all([
-    getOrganizationMemberCount(orgId),
-    getOrganizationPlanCached(orgId)
-  ])
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
       <PageHeading
         title="Members"
-        description="Invite teammates, manage roles and review pending invitations."
+        description="Invite teammates, change roles, and review invitations."
         icon={Users}
       />
 
-      <MembersTabs memberCount={memberCount} maxMembers={plan.maxMembers} />
+      <MembersTabs
+        memberCount={usage.memberCount}
+        maxMembers={usage.maxMembers}
+      />
     </div>
   )
 }

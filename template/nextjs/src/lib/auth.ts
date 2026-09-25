@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { validateEmail } from '@ejekanshjain/simple-email-validator'
 import { createId } from '@paralleldrive/cuid2'
 import { APIError, betterAuth } from 'better-auth'
@@ -15,9 +17,18 @@ import {
   verificationsTable
 } from '~/db/schema'
 import { env } from '~/env'
+import { ac, adminRoles, roles } from './auth-permissions'
 import { sendMagicLinkEmail, sendWelcomeEmail } from './email-service'
 import { siteConfig } from './siteConfig'
 
+/**
+ * Better Auth configuration.
+ *
+ * Features:
+ * - Magic link email sign-in
+ * - OAuth (GitHub, Google) with account linking
+ * - Admin plugin with `user`, `admin`, and `superadmin` roles
+ */
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -53,6 +64,11 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        // Magic-link sign-up sends an empty name; fall back to the email's
+        // local part so greetings and avatars never render blank.
+        before: async user => ({
+          data: { ...user, name: user.name.trim() || user.email.split('@')[0]! }
+        }),
         after: async user => {
           try {
             await start(sendWelcomeEmail, [
@@ -85,7 +101,12 @@ export const auth = betterAuth({
         }
       }
     }),
-    admin(),
+    admin({
+      ac,
+      roles,
+      adminRoles: [...adminRoles],
+      defaultRole: 'user'
+    }),
     lastLoginMethod()
   ],
   hooks: {
@@ -109,6 +130,13 @@ export const auth = betterAuth({
   }
 })
 
+/**
+ * The current session, cached per request.
+ *
+ * Returns null when signed out. `isAdmin` is true for both `admin` and
+ * `superadmin` (admin panel access). `isSuperAdmin` is true only for
+ * `superadmin` (user management, role changes, and impersonation).
+ */
 export const getAuthSession = cache(async () => {
   const authSession = await auth.api.getSession({
     headers: await headers()
@@ -116,7 +144,9 @@ export const getAuthSession = cache(async () => {
 
   if (!authSession || !authSession.user || !authSession.session) return null
 
-  const isAdmin = authSession.user.role === 'admin'
+  const role = authSession.user.role
+  const isSuperAdmin = role === 'superadmin'
+  const isAdmin = role === 'admin' || isSuperAdmin
 
-  return { ...authSession, isAdmin }
+  return { ...authSession, isAdmin, isSuperAdmin }
 })

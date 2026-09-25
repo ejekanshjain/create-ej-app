@@ -1,25 +1,27 @@
 import { Button, Heading, Text } from 'react-email'
-import EmailLayout from './components/email-layout'
+import EmailLayout from '~/emails/components/email-layout'
+import { siteConfig } from '~/lib/siteConfig'
 
 interface TestEmailProps {
   name: string
 }
 
+/** Sent by `bun run email:test` to check SMTP settings. */
 export default function TestEmail({ name }: TestEmailProps) {
   return (
-    <EmailLayout previewText="This is a test email" companyName="Test">
+    <EmailLayout
+      previewText="Test email from your app"
+      companyName={siteConfig.name}
+    >
       <Heading className="mb-4 text-2xl font-bold text-gray-900">
         Test Email for {name}
       </Heading>
-      <Text className="mb-4 text-base text-gray-700">
-        This is a test email template to verify email functionality.
-      </Text>
       <Text className="mb-6 text-base text-gray-700">
-        If you're seeing this, the email system is working correctly.
+        Your SMTP settings work: this email reached your inbox.
       </Text>
       <Button
         href="https://example.com"
-        className="rounded-md bg-black px-5 py-3 text-center text-sm font-medium text-white"
+        className="bg-brand rounded-md px-5 py-3 text-center text-sm font-medium text-white"
       >
         Test Button
       </Button>
@@ -28,5 +30,5 @@ export default function TestEmail({ name }: TestEmailProps) {
 }
 
 TestEmail.PreviewProps = {
-  name: 'John Doe'
-}
+  name: 'Alex Morgan'
+} satisfies TestEmailProps

@@ -1,19 +1,16 @@
 import type { MetadataRoute } from 'next'
 import { env } from '~/env'
 
+/** Renders every request dynamically, so the environment check is live. */
 export const dynamic = 'force-dynamic'
 
+/**
+ * robots.txt. Staging blocks every crawler; production keeps signed-in
+ * surfaces and the API out of search results.
+ */
 export default function robots(): MetadataRoute.Robots {
-  // Block all crawlers in staging to prevent accidental indexing
   if (env.APP_ENV === 'staging') {
-    return {
-      rules: [
-        {
-          userAgent: '*',
-          disallow: '/'
-        }
-      ]
-    }
+    return { rules: [{ userAgent: '*', disallow: '/' }] }
   }
 
   const baseUrl = env.BETTER_AUTH_URL
@@ -23,7 +20,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/admin/', '/app/', '/accept-invitation/']
+        disallow: [
+          '/api/',
+          '/admin',
+          '/app',
+          '/accept-invitation',
+          '/profile',
+          '/support'
+        ]
       }
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

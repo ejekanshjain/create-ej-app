@@ -1,9 +1,10 @@
 'use client'
 
-import { Building2, ChevronsUpDown, PlusCircle } from 'lucide-react'
+import { Building2, ChevronsUpDown, LogOut, PlusCircle } from 'lucide-react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { ConfirmDialog } from '~/components/confirm-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +18,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from '~/components/ui/sidebar'
-import type { UserOrganization } from '~/lib/app-navigation'
+import { organization } from '~/lib/auth-client'
+import { toastActionError, toastSuccessMessage } from '~/lib/toast-message'
+
+export type SwitcherOrganization = {
+  id: string
+  name: string
+  role: string
+  logoUrl: string | null
+}
 
 function OrganizationLogo({
   logo,
@@ -61,7 +70,7 @@ function OrganizationLogo({
 export function OrganizationSwitcher({
   organizations
 }: {
-  organizations: UserOrganization[]
+  organizations: SwitcherOrganization[]
 }) {
   const router = useRouter()
   const params = useParams()
@@ -71,6 +80,31 @@ export function OrganizationSwitcher({
     () => organizations.find(o => o.id === activeOrgId) ?? organizations[0],
     [organizations, activeOrgId]
   )
+
+  // Managers leave from Settings; members cannot open Settings, so they get
+  // the option here.
+  const canLeaveHere = activeOrgId !== undefined && activeOrg?.role === 'member'
+  const [confirmLeave, setConfirmLeave] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
+
+  async function leaveOrganization() {
+    if (!activeOrg) return
+    setIsLeaving(true)
+    const { error } = await organization.leave({
+      organizationId: activeOrg.id
+    })
+    setIsLeaving(false)
+
+    if (error) {
+      toastActionError(error, 'You are still a member. Try again.')
+      return
+    }
+
+    setConfirmLeave(false)
+    toastSuccessMessage(`You left ${activeOrg.name}`)
+    router.push('/app')
+    router.refresh()
+  }
 
   return (
     <SidebarMenu>
@@ -82,13 +116,13 @@ export function OrganizationSwitcher({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <OrganizationLogo
-                logo={activeOrg?.logo ?? null}
+                logo={activeOrg?.logoUrl ?? null}
                 name={activeOrg?.name ?? ''}
                 size="lg"
               />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
-                  {activeOrg?.name ?? 'Select organization'}
+                  {activeOrg?.name ?? 'Select Organization'}
                 </span>
                 {activeOrg ? (
                   <span className="text-muted-foreground truncate text-xs capitalize">
@@ -115,7 +149,11 @@ export function OrganizationSwitcher({
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center overflow-hidden rounded-sm border">
-                  <OrganizationLogo logo={org.logo} name={org.name} size="sm" />
+                  <OrganizationLogo
+                    logo={org.logoUrl}
+                    name={org.name}
+                    size="sm"
+                  />
                 </div>
                 <span className="truncate">{org.name}</span>
               </DropdownMenuItem>
@@ -129,12 +167,34 @@ export function OrganizationSwitcher({
                 <PlusCircle className="size-4" />
               </div>
               <div className="text-muted-foreground font-medium">
-                Create organization
+                Create Organization
               </div>
             </DropdownMenuItem>
+            {canLeaveHere ? (
+              <DropdownMenuItem
+                variant="destructive"
+                className="gap-2 p-2"
+                onClick={() => setConfirmLeave(true)}
+              >
+                <div className="flex size-6 items-center justify-center rounded-md border">
+                  <LogOut className="size-4" />
+                </div>
+                <div className="font-medium">Leave Organization</div>
+              </DropdownMenuItem>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+
+      <ConfirmDialog
+        open={confirmLeave}
+        onOpenChange={setConfirmLeave}
+        title="Leave Organization"
+        description={`You lose access to ${activeOrg?.name ?? 'this organization'}. An owner or admin must invite you to return.`}
+        confirmLabel="Leave Organization"
+        pending={isLeaving}
+        onConfirm={leaveOrganization}
+      />
     </SidebarMenu>
   )
 }

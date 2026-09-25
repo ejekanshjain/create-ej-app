@@ -7,16 +7,11 @@ type OrganizationContextType = {
   name: string
   role: string
   memberId: string
-  userId: string
 }
 
-const OrganizationContext = createContext<OrganizationContextType>({
-  id: '',
-  name: '',
-  role: 'member',
-  memberId: '',
-  userId: ''
-})
+// No default: a component rendered outside the provider is a bug, and the
+// hook throws rather than passing off an empty organization as real.
+const OrganizationContext = createContext<OrganizationContextType | null>(null)
 
 export const OrganizationContextProvider = ({
   children,
@@ -28,12 +23,13 @@ export const OrganizationContextProvider = ({
   return <OrganizationContext value={value}>{children}</OrganizationContext>
 }
 
+/** The organization in the current `/app/[orgId]` route. */
 export const useOrganizationContext = () => {
   const context = useContext(OrganizationContext)
 
   if (!context) {
     throw new Error(
-      'useOrganizationContext must be used within a OrganizationContextProvider'
+      'useOrganizationContext must be used within an OrganizationContextProvider'
     )
   }
 

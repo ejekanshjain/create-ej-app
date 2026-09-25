@@ -1,7 +1,43 @@
+/**
+ * @fileoverview Screen Size Indicator (Development Tool)
+ *
+ * Displays current viewport dimensions and Tailwind breakpoint.
+ * Useful during development for responsive design debugging.
+ *
+ * **Displayed Info:**
+ * - Viewport width x height in pixels
+ * - Current Tailwind breakpoint (XS, SM, MD, LG, XL, 2XL)
+ *
+ * **Positioning:**
+ * - Fixed to bottom-right corner
+ * - Always visible overlay
+ *
+ * Render this component conditionally.
+ * only in development environment.
+ *
+ * @module components/screen-size
+ */
+
 'use client'
 
 import { FC, useEffect, useState } from 'react'
 
+/**
+ * Screen Size Indicator Component
+ *
+ * Fixed position badge showing viewport dimensions and breakpoint.
+ * Updates on window resize.
+ *
+ * **Breakpoint Display:**
+ * - XS: < 640px (default, no sm: prefix)
+ * - SM: 640px - 767px
+ * - MD: 768px - 1023px
+ * - LG: 1024px - 1279px
+ * - XL: 1280px - 1535px
+ * - 2XL: ≥ 1536px
+ *
+ * @returns {JSX.Element} Fixed position size indicator
+ */
 export const ScreenSize: FC = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
