@@ -1,11 +1,12 @@
 {
   "name": "create-ej-app",
-  "version": "29.0.0",
+  "version": "30.0.0",
   "description": "Bootstrap a next.js app with my preferred setup",
   "main": "cli.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "start": "node ."
   },
   "bin": {
