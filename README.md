@@ -59,7 +59,8 @@ You will be prompted for:
 - Project name
 - Description
 - Template (`nextjs`, `saas-starter`, or `api`)
-- Whether to initialize git
+- Whether to initialize git. If yes, the CLI also makes the initial commit, as long as `.env` is ignored.
+- Whether to update packages to their latest versions. With Bun it runs `bun update -i`, so you pick which packages to update.
 
 Example:
 
@@ -68,7 +69,26 @@ Example:
 ? Enter a description for the project: Production-ready Next.js app
 ? Select a template: nextjs
 ? Initialize a git repository? yes
+? Update packages to their latest versions? The template can lag behind. yes
 ```
+
+### Without Prompts
+
+Pass the answers as flags to skip the prompts, for example in scripts, CI or coding agents. Any answer you leave out is still asked:
+
+```bash
+bunx create-ej-app@latest --name my-app --description "Production-ready Next.js app" --template nextjs --git --no-update
+```
+
+| Flag                             | Answers                                       |
+| -------------------------------- | --------------------------------------------- |
+| `-n, --name <name>`              | Project name, also the folder name            |
+| `-d, --description <text>`       | Description                                   |
+| `-t, --template <template>`      | Template: `nextjs`, `saas-starter`, or `api`  |
+| `--git` or `--no-git`            | Whether to initialize git and commit          |
+| `--update` or `--no-update`      | Whether to update packages to latest versions |
+
+Without a terminal, the CLI can't ask, so it exits and names the flags you still need to pass. `--update` without a terminal updates every package to its latest version, which can include major versions: run the type-check and tests afterwards.
 
 ---
 

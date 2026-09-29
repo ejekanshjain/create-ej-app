@@ -15,6 +15,7 @@ interface Response {
   description: string
   template: string
   git: string
+  update: string
 }
 
 /**
@@ -61,60 +62,192 @@ const getInstallCommand = (packageManager: string) => {
   }
 }
 
+/**
+ * Commands that update dependencies to their latest versions: `interactive`
+ * lets you pick packages in a terminal, `all` updates everything. Only Bun and
+ * pnpm have both; other package managers get instructions instead.
+ */
+const getUpdateCommands = (packageManager: string) => {
+  switch (packageManager) {
+    case 'bun':
+      return { interactive: 'bun update -i', all: 'bun update --latest' }
+    case 'pnpm':
+      return {
+        interactive: 'pnpm update -i --latest',
+        all: 'pnpm update --latest'
+      }
+    default:
+      return null
+  }
+}
+
+/**
+ * Commits the new project once. Skips the commit when .env is not ignored, so
+ * the generated secret never lands in history, and explains a missing git
+ * identity instead of failing silently.
+ */
+const commitEverything = (projectDir: string) => {
+  const run = (command: string) =>
+    execSync(command, { cwd: projectDir, stdio: 'pipe' })
+  try {
+    run('git check-ignore -q .env')
+  } catch {
+    console.error(
+      'Skipped the initial commit: .env is not in .gitignore, and committing it would publish its secrets.'
+    )
+    return
+  }
+  try {
+    run('git add -A')
+    run('git commit -q -m "initial commit: bootstrap new project with create-ej-app"')
+    console.log('Created the initial commit.')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(
+      /user\.(name|email)|identity/i.test(message)
+        ? "Skipped the initial commit: git doesn't know who you are. Set git config user.name and user.email, then run 'git add -A && git commit'."
+        : `The initial commit failed: ${message}`
+    )
+  }
+}
+
 const getRunCommand = (packageManager: string, script: string) =>
   packageManager === 'npm'
     ? `npm run ${script}`
     : `${packageManager} run ${script}`
 
-program.action(async () => {
-  const response: Response = await enquirer.prompt([
-    {
+// The name becomes a directory and the package.json name, so keep it to
+// characters that are safe for both.
+const PROJECT_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]{0,213}$/
+const PROJECT_NAME_HINT =
+  'Use lowercase letters, numbers, dots, hyphens, and underscores.'
+
+const TEMPLATES = [
+  {
+    name: 'nextjs',
+    message:
+      'Full-stack Next.js 16 app with Better Auth, an admin panel, shadcn/ui, and Drizzle'
+  },
+  {
+    name: 'saas-starter',
+    message:
+      'SaaS starter with organizations, Stripe, support tickets, Better Auth, shadcn/ui, and Drizzle'
+  },
+  {
+    name: 'api',
+    message: 'API server with Elysia, Drizzle, and TypeScript'
+  }
+]
+
+interface Options {
+  name?: string
+  description?: string
+  template?: string
+  git?: boolean
+  update?: boolean
+}
+
+program
+  .name('create-ej-app')
+  .description(
+    'Create a new app from a template. Flags answer the prompts; anything left out is asked.'
+  )
+  .option('-n, --name <name>', 'project name, also the folder name')
+  .option('-d, --description <text>', 'project description')
+  .option(
+    '-t, --template <template>',
+    `template: ${TEMPLATES.map(t => t.name).join(', ')}`
+  )
+  .option('--git', 'initialize a git repository')
+  .option('--no-git', 'skip git initialization')
+  .option(
+    '--update',
+    'update packages to their latest versions after creating the project'
+  )
+  .option('--no-update', 'keep the template package versions')
+
+program.action(async (options: Options) => {
+  if (options.name !== undefined && !PROJECT_NAME_PATTERN.test(options.name)) {
+    console.error(`Invalid project name '${options.name}'. ${PROJECT_NAME_HINT}`)
+    process.exit(1)
+  }
+  if (
+    options.template !== undefined &&
+    !TEMPLATES.some(t => t.name === options.template)
+  ) {
+    console.error(
+      `Unknown template '${options.template}'. Use one of: ${TEMPLATES.map(t => t.name).join(', ')}.`
+    )
+    process.exit(1)
+  }
+
+  const questions = [
+    options.name === undefined && {
       type: 'input',
       name: 'projectName',
       message: 'Enter the project name:',
       initial: 'my-project',
-      // The name becomes a directory and the package.json name, so keep it
-      // to characters that are safe for both.
       validate: (value: string) =>
-        /^[a-z0-9][a-z0-9._-]{0,213}$/.test(value) ||
-        'Use lowercase letters, numbers, dots, hyphens, and underscores.'
+        PROJECT_NAME_PATTERN.test(value) || PROJECT_NAME_HINT
     },
-    {
+    options.description === undefined && {
       type: 'input',
       name: 'description',
       message: 'Enter a description for the project:',
       initial: 'A Legendary Project'
     },
-    {
+    options.template === undefined && {
       type: 'select',
       name: 'template',
       message: 'Select a template:',
-      choices: [
-        {
-          name: 'nextjs',
-          message:
-            'Full-stack Next.js 16 app with Better Auth, an admin panel, shadcn/ui, and Drizzle'
-        },
-        {
-          name: 'saas-starter',
-          message:
-            'SaaS starter with organizations, Stripe, support tickets, Better Auth, shadcn/ui, and Drizzle'
-        },
-        {
-          name: 'api',
-          message: 'API server with Elysia, Drizzle, and TypeScript'
-        }
-      ]
+      choices: TEMPLATES
     },
-    {
+    options.git === undefined && {
       type: 'select',
       name: 'git',
       message: 'Initialize a git repository?',
       choices: ['yes', 'no']
+    },
+    options.update === undefined && {
+      type: 'select',
+      name: 'update',
+      message:
+        'Update packages to their latest versions? The template can lag behind.',
+      choices: ['yes', 'no']
     }
-  ])
+  ].filter(q => q !== false)
 
-  const { projectName, description, template, git } = response
+  // Without a terminal the prompts would wait forever, for example when an
+  // agent or a script runs the CLI, so name the missing flags instead.
+  if (questions.length && !process.stdin.isTTY) {
+    const flags: Record<string, string> = {
+      projectName: '--name',
+      description: '--description',
+      template: '--template',
+      git: '--git or --no-git',
+      update: '--update or --no-update'
+    }
+    console.error(
+      `No terminal to ask questions in. Pass ${questions.map(q => flags[q.name]).join(', ')}.`
+    )
+    process.exit(1)
+  }
+
+  const answers: Partial<Response> = questions.length
+    ? await enquirer.prompt(questions)
+    : {}
+
+  const projectName = options.name ?? answers.projectName!
+  const description = options.description ?? answers.description!
+  const template = options.template ?? answers.template!
+  const git =
+    options.git === undefined ? answers.git! : options.git ? 'yes' : 'no'
+  const update =
+    options.update === undefined
+      ? answers.update!
+      : options.update
+        ? 'yes'
+        : 'no'
 
   const projectDir = path.join(process.cwd(), projectName)
 
@@ -186,18 +319,41 @@ program.action(async () => {
     fs.writeFileSync(readmeFile, `# ${projectName}\n\n${description}\n`)
   }
 
-  if (git === 'yes') {
-    try {
-      execSync('git init', { cwd: projectDir, stdio: 'inherit' })
-    } catch (err) {
-      console.error('Error initializing git repository:', err)
-    }
-  }
-
   const pm = detectPackageManager()
   const installCommand = getInstallCommand(pm)
   const devCommand = getRunCommand(pm, 'dev')
   const dbPushCommand = getRunCommand(pm, 'db:push')
+
+  // Updating also installs, so the initial commit includes the lockfile
+  let installed = false
+  if (update === 'yes') {
+    const commands = getUpdateCommands(pm)
+    if (!commands) {
+      console.log(
+        `\nAutomatic updates support Bun and pnpm. After '${installCommand}', update packages with your package manager.`
+      )
+    } else {
+      const command = process.stdin.isTTY ? commands.interactive : commands.all
+      console.log(`\nUpdating packages with '${command}'…`)
+      try {
+        execSync(command, { cwd: projectDir, stdio: 'inherit' })
+        installed = true
+      } catch {
+        console.error(
+          `Updating packages failed, so the template versions stay. Run '${command}' in the project to try again.`
+        )
+      }
+    }
+  }
+
+  if (git === 'yes') {
+    try {
+      execSync('git init', { cwd: projectDir, stdio: 'inherit' })
+      commitEverything(projectDir)
+    } catch (err) {
+      console.error('Error initializing git repository:', err)
+    }
+  }
 
   console.log(
     `
@@ -210,9 +366,7 @@ code ${projectName}
 
 To get started, run these commands:
 cd ${projectName}
-
-${installCommand}
-
+${installed ? '' : `\n${installCommand}\n`}
 Fill in the values in .env, then create the database tables:
 
 ${dbPushCommand}
