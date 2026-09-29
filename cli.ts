@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process'
+import { execFileSync, execSync } from 'child_process'
 import { program } from 'commander'
 import { randomBytes } from 'crypto'
 import enquirer from 'enquirer'
@@ -79,6 +79,24 @@ const getUpdateCommands = (packageManager: string) => {
     default:
       return null
   }
+}
+
+/**
+ * The branch name for a new repository: the one set in git's
+ * init.defaultBranch, unless that is unset or `master`, which become `main`.
+ */
+const defaultBranch = () => {
+  let configured = ''
+  try {
+    configured = execSync('git config --get init.defaultBranch', {
+      stdio: 'pipe'
+    })
+      .toString()
+      .trim()
+  } catch {
+    // Not set
+  }
+  return configured && configured !== 'master' ? configured : 'main'
 }
 
 /**
@@ -348,7 +366,10 @@ program.action(async (options: Options) => {
 
   if (git === 'yes') {
     try {
-      execSync('git init', { cwd: projectDir, stdio: 'inherit' })
+      execFileSync('git', ['init', '-b', defaultBranch()], {
+        cwd: projectDir,
+        stdio: 'inherit'
+      })
       commitEverything(projectDir)
     } catch (err) {
       console.error('Error initializing git repository:', err)

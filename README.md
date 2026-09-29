@@ -59,7 +59,7 @@ You will be prompted for:
 - Project name
 - Description
 - Template (`nextjs`, `saas-starter`, or `api`)
-- Whether to initialize git. If yes, the CLI also makes the initial commit, as long as `.env` is ignored.
+- Whether to initialize git. If yes, the CLI creates the `main` branch (or your configured default, unless it is `master`) and makes the initial commit, as long as `.env` is ignored.
 - Whether to update packages to their latest versions. With Bun it runs `bun update -i`, so you pick which packages to update.
 
 Example:
